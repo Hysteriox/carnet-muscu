@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Carnet de Muscu</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Muscu">
+<meta name="theme-color" content="#121514">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: machines rangées par groupe musculaire (pictogramme sur pastille de couleur) à gauche, fiche machine + saisie à droite */
+:root{
+  --bg:#f3f4f2; --panel:#ffffff; --fg:#1b1f1d; --muted:#5d6661; --line:#d9ddd9;
+  --jambes:#c8102e; --pecs:#0057b8; --dos:#00843d; --epaules:#c77700; --biceps:#6b3fa0; --triceps:#00808a; --abdos:#4a4f4c;
+  --display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --body:"IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121514; --panel:#1b1f1d; --fg:#eef0ee; --muted:#9aa39e; --line:#2e3431;
+  --jambes:#e23a52; --pecs:#3f86e6; --dos:#25a35d; --epaules:#e08d14; --biceps:#8c62c4; --triceps:#1aa0aa; --abdos:#6f7672; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121514; --panel:#1b1f1d; --fg:#eef0ee; --muted:#9aa39e; --line:#2e3431;
+  --jambes:#e23a52; --pecs:#3f86e6; --dos:#25a35d; --epaules:#e08d14; --biceps:#8c62c4; --triceps:#1aa0aa; --abdos:#6f7672; color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:var(--bg);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+details summary{cursor:pointer;font-family:var(--display);font-weight:600;font-size:1.15rem;text-transform:uppercase}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.hint a{color:inherit}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.wrap{max-width:1240px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:24px}
+header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px;border-bottom:3px solid var(--fg);padding-bottom:12px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(2.2rem,6vw,3.4rem);line-height:.95;margin:0;text-transform:uppercase;letter-spacing:.01em}
+h2{font-family:var(--display);font-weight:800;font-size:1.8rem;margin:0;text-transform:uppercase;line-height:1}
+h3{font-family:var(--display);font-weight:800;font-size:1.5rem;margin:0;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+h3::before{content:"";width:14px;height:14px;border-radius:50%;background:var(--c)}
+h3 small{font-family:var(--body);font-weight:400;font-size:13px;color:var(--muted);text-transform:none}
+.sub{color:var(--muted);margin:4px 0 0}
+#status{font-size:13px;color:var(--muted);margin:0}
+.main{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:900px){.main{grid-template-columns:minmax(0,1fr)}}
+.side{display:grid;gap:16px;min-width:0;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.close{display:none}
+/* Sur téléphone, la fiche s'ouvre par-dessus la liste au lieu d'être tout en bas */
+@media (max-width:900px){
+  .side{position:fixed;inset:0;z-index:20;background:var(--bg);overflow-y:auto;align-content:start;
+    padding-block:calc(env(safe-area-inset-top,0px) + 12px) calc(env(safe-area-inset-bottom,0px) + 24px);
+    padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .side:not(.open){display:none}
+  .close{display:block;justify-self:start}
+}
+#cats{display:grid;gap:28px}
+.cat{display:grid;gap:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.card{all:unset;box-sizing:border-box;cursor:pointer;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;display:grid;gap:6px;align-content:start}
+.card:hover{border-color:var(--muted)}
+.card:focus-visible{outline:3px solid var(--c);outline-offset:2px}
+.card[aria-pressed="true"]{border-color:var(--c);box-shadow:inset 0 0 0 2px var(--c)}
+.card .top{display:flex;align-items:center;gap:10px}
+.name{font-family:var(--display);font-weight:600;font-size:1.12rem;text-transform:uppercase;line-height:1.05}
+.pr{font-family:var(--mono);font-size:1.35rem;font-variant-numeric:tabular-nums}
+.pr small{font-size:.72rem;color:var(--muted)}
+.none{color:var(--muted);font-size:13px}
+.logo{flex:none;width:48px;height:48px;border-radius:10px;background:var(--c);display:grid;place-items:center}
+.logo svg{width:38px;height:38px;stroke:#fff;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.logo svg .h{fill:#fff;stroke:none}
+.logo.big{width:80px;height:80px;border-radius:14px}.logo.big svg{width:64px;height:64px}
+.spark{width:100%;height:26px;display:block}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px;display:grid;gap:16px}
+.dhead{display:flex;gap:14px;align-items:center}
+.muscle{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{border-top:2px solid var(--c);padding-top:6px}
+.stat b{display:block;font-family:var(--mono);font-size:1.2rem;font-variant-numeric:tabular-nums;font-weight:500}
+.stat span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-family:var(--mono);font-size:10px}
+.tbl{overflow-x:auto;max-height:260px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14px}
+th{text-align:left;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:500;border-bottom:1px solid var(--line);padding:6px 4px;position:sticky;top:0;background:var(--panel)}
+td{border-bottom:1px solid var(--line);padding:6px 4px}
+td.n{font-family:var(--mono)}
+.del{all:unset;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:4px}
+.del:hover,.del:focus-visible{color:var(--jambes);outline:1px solid var(--jambes)}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;align-items:end}
+label{display:grid;gap:4px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+input,select{font:inherit;font-size:15px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px;min-width:0}
+input:focus-visible,select:focus-visible{outline:2px solid var(--fg);outline-offset:1px}
+.btn{font:inherit;font-family:var(--display);font-weight:800;font-size:1.1rem;text-transform:uppercase;letter-spacing:.04em;background:var(--fg);color:var(--bg);border:0;border-radius:4px;padding:9px 14px;cursor:pointer}
+.btn:focus-visible{outline:3px solid var(--epaules);outline-offset:2px}
+#msg{font-size:13px;color:var(--muted);min-height:1.2em;margin:0}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Carnet de Muscu</h1>
+      <p class="sub">Charges et progression, machine par machine, rangées par groupe musculaire.</p>
+    </div>
+    <p id="status">Chargement des machines…</p>
+  </header>
+
+  <div class="main">
+    <div id="cats"></div>
+    <div class="side" id="side">
+      <button class="btn close" id="close" type="button">← Retour aux machines</button>
+      <section class="panel" id="detail" aria-live="polite"><p class="none">Choisis une machine pour voir sa progression.</p></section>
+      <section class="panel" id="addPanel">
+        <h2>Nouvelle perf</h2>
+        <form id="f">
+          <label style="grid-column:1/-1">Machine<select id="fm"></select></label>
+          <label>Charge<input id="fp" type="number" min="0.1" step="0.1" inputmode="decimal" required></label>
+          <label>Date<input id="fd" type="date" required></label>
+          <button class="btn" type="submit">Enregistrer</button>
+        </form>
+        <p id="msg"></p>
+      </section>
+      <details class="panel" id="gh">
+        <summary>Connexion GitHub</summary>
+        <p class="hint" id="ghState"></p>
+        <label>Jeton GitHub<input id="tok" type="password" autocomplete="off" spellcheck="false"></label>
+        <div class="row"><button class="btn" id="tokSave" type="button">Enregistrer</button><button class="btn ghost" id="tokForget" type="button">Oublier le jeton</button></div>
+        <p class="hint">Le jeton reste uniquement sur cet appareil. Il permet à l'appli d'enregistrer tes perfs dans le fichier data.json de ton dépôt GitHub.</p>
+      </details>
+    </div>
+  </div>
+</div>
+
+<script>
+const CATS=[
+  {id:"jambes",nom:"Jambes"},{id:"pecs",nom:"Pectoraux"},{id:"dos",nom:"Dos"},{id:"epaules",nom:"Épaules"},
+  {id:"biceps",nom:"Biceps"},{id:"triceps",nom:"Triceps"},{id:"abdos",nom:"Abdos"},
+];
+// Pictogrammes de mouvement (silhouette blanche, 48×48) ; .h = tête pleine
+const P={
+  velo:'<circle cx="13" cy="36" r="6"/><circle cx="35" cy="36" r="6"/><path d="M13 36l8-11h11l3 11M21 25l-2-5h5"/><circle class="h" cx="27" cy="8" r="3.5"/><path d="M26 12l-5 9 7 5-2 8M25 14l8 5"/>',
+  adduction:'<circle class="h" cx="24" cy="7" r="3.5"/><path d="M24 11v14M24 15l-8 6M24 15l8 6M24 25l-11 13M24 25l11 13M4 33h6m-3-3 3 3-3 3M44 33h-6m3-3-3 3 3 3"/>',
+  abduction:'<circle class="h" cx="24" cy="7" r="3.5"/><path d="M24 11v14M24 15l-8 6M24 15l8 6M24 25l-6 14M24 25l6 14M12 33H5m3-3-3 3 3 3M36 33h7m-3-3 3 3-3 3"/>',
+  legpress:'<path d="M6 24l6 18"/><circle class="h" cx="9" cy="16" r="3.5"/><path d="M10 20l4 14 10-10 8 6M12 24l8 2M37 17l-5 22"/>',
+  glute:'<circle class="h" cx="9" cy="18" r="3.5"/><path d="M13 21h16M15 21v15M29 21v15h-4M29 21l12-8M6 38h36"/>',
+  legext:'<path d="M10 6v28h18"/><circle class="h" cx="16" cy="9" r="3.5"/><path d="M16 13v17h13l8-9"/><circle cx="39" cy="19" r="3"/>',
+  hack:'<path d="M10 6l8 34"/><circle class="h" cx="22" cy="8" r="3.5"/><path d="M22 12l3 14-9 4 5 10M18 15h10M14 42h14"/>',
+  legcurlassis:'<path d="M10 6v28"/><circle class="h" cx="16" cy="9" r="3.5"/><path d="M16 13v17h14l-4 10M13 26h19"/><circle cx="23" cy="41" r="2.5"/>',
+  legcurlallonge:'<path d="M4 34h32M10 34v8M30 34v8"/><circle class="h" cx="8" cy="26" r="3.5"/><path d="M12 28h18l6-12"/><circle cx="38" cy="13" r="3"/>',
+  calf:'<circle class="h" cx="16" cy="8" r="3.5"/><path d="M16 12v14h14v10l5-2M12 22h22M41 36V26m-3 3 3-3 3 3"/>',
+  abdo:'<circle class="h" cx="28" cy="13" r="3.5"/><path d="M24 17l-7 13h14v10M24 18l8 5M10 8v26"/>',
+  row:'<circle class="h" cx="12" cy="10" r="3.5"/><path d="M12 14v18h14v8M13 20h12M25 20h17M36 12v22"/>',
+  pulldown:'<path d="M8 8q16-6 32 0M24 3v4"/><circle class="h" cx="24" cy="16" r="3.5"/><path d="M24 20v14M24 22l-9-6-1-7M24 22l9-6 1-7M16 36h16M24 34h8v8"/>',
+  pushdown:'<path d="M30 4v18M26 22h8"/><circle class="h" cx="16" cy="8" r="3.5"/><path d="M16 12v16l-4 12M16 28l4 12M17 16l6 4 4 3"/>',
+  overhead:'<circle class="h" cx="22" cy="14" r="3.5"/><path d="M22 18v12l-4 12M22 30l4 12M22 20l5-8 3-8M36 44L30 4"/>',
+  dip:'<circle class="h" cx="24" cy="8" r="3.5"/><path d="M24 12v16M24 15l-9 5v10M24 15l9 5v10M16 32h16M24 37v7m-3-3 3 3 3-3"/>',
+  curlcable:'<circle class="h" cx="16" cy="8" r="3.5"/><path d="M16 12v16l-4 12M16 28l4 12M17 15v9l9-6M26 18l12 24"/>',
+  marteau:'<circle class="h" cx="16" cy="8" r="3.5"/><path d="M16 12v16l-4 12M16 28l4 12M17 15v9l8-6M25 12v12M22 12h6M22 24h6"/>',
+  armcurl:'<circle class="h" cx="10" cy="10" r="3.5"/><path d="M10 14v18h10v10M10 18l12 8 4-12M18 30l16-6"/><circle cx="26" cy="11" r="2.5"/>',
+  pecfly:'<circle class="h" cx="24" cy="9" r="3.5"/><path d="M24 13v19M24 17q-10-1-14 7M24 17q10-1 14 7M10 21v8M38 21v8M16 36h16"/>',
+  chest:'<path d="M8 6v30"/><circle class="h" cx="14" cy="9" r="3.5"/><path d="M14 13v17h12v10M15 19h20M35 14v10"/>',
+  bench:'<path d="M4 34h34M10 34v8M32 34v8"/><circle class="h" cx="36" cy="28" r="3.5"/><path d="M32 30H10l-4 8M24 30V14M10 14h28M12 10v8M36 10v8"/>',
+  shoulder:'<circle class="h" cx="24" cy="16" r="3.5"/><path d="M24 20v14M24 22l-9 1V8M24 22l9 1V8M10 8h8M30 8h8M16 36h16"/>',
+  reardelt:'<circle class="h" cx="24" cy="12" r="3.5"/><path d="M24 16v18M24 20l-14-3M24 20l14-3M8 13v8M40 13v8M16 36h16"/>',
+  latraise:'<circle class="h" cx="24" cy="8" r="3.5"/><path d="M24 12v16l-4 12M24 28l4 12M24 16h14M24 16l-5 10"/><circle cx="41" cy="16" r="2.5"/>',
+  frontraise:'<circle class="h" cx="16" cy="8" r="3.5"/><path d="M16 12v16l-4 12M16 28l4 12M17 16h16M33 12v8M30 12h6M30 20h6"/>',
+};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const num=n=>(Math.round(n*10)/10).toLocaleString("fr-FR");
+const fmtDate=d=>d?new Date(d+"T12:00").toLocaleDateString("fr-FR",{day:"numeric",month:"short"}):"départ";
+const logo=(m,big)=>`<span class="logo${big?" big":""}" style="--c:var(--${m.cat})" aria-hidden="true"><svg viewBox="0 0 48 48">${P[m.picto]||P.chest}</svg></span>`;
+
+let machines=[],sel=null,canWrite=false;
+const byId=id=>machines.find(m=>m.id===id);
+const unit=m=>m.unite||"kg";
+const best=m=>m.perfs.length?Math.max(...m.perfs.map(p=>p.v)):null;
+
+function spark(m){
+  const pts=m.perfs;if(pts.length<2)return"";
+  const ys=pts.map(p=>p.v),lo=Math.min(...ys),span=Math.max(...ys)-lo||1;
+  const xy=pts.map((p,i)=>[i/(pts.length-1)*96+2,23-(p.v-lo)/span*19]);
+  const [lx,ly]=xy[xy.length-1];
+  return`<svg class="spark" viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"><polyline points="${xy.join(" ")}" fill="none" stroke="var(--${m.cat})" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="${lx}" cy="${ly}" r="2.5" fill="var(--${m.cat})"/></svg>`;
+}
+
+function chart(m){
+  const pts=m.perfs;
+  if(pts.length<2)return`<p class="none">Note au moins deux perfs pour voir la courbe.</p>`;
+  const W=420,H=170,L=38,R=12,T=12,B=24;
+  const ys=pts.map(p=>p.v);let lo=Math.min(...ys),hi=Math.max(...ys);
+  if(lo===hi){lo-=5;hi+=5}
+  const x=i=>L+i/(pts.length-1)*(W-L-R),y=v=>T+(hi-v)/(hi-lo)*(H-T-B);
+  const grid=[lo,(lo+hi)/2,hi].map(v=>`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L-6}" y="${y(v)+3}" text-anchor="end">${num(v)}</text>`).join("");
+  const line=pts.map((p,i)=>`${x(i)},${y(p.v)}`).join(" ");
+  const c=`var(--${m.cat})`;
+  const dots=pts.map((p,i)=>`<circle cx="${x(i)}" cy="${y(p.v)}" r="${i===pts.length-1?4.5:3}" fill="${c}"><title>${fmtDate(p.d)} : ${num(p.v)} ${unit(m)}</title></circle>`).join("");
+  return`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Évolution de la charge">${grid}<polygon points="${L},${H-B} ${line} ${x(pts.length-1)},${H-B}" fill="${c}" opacity=".12"/><polyline points="${line}" fill="none" stroke="${c}" stroke-width="2.5"/>${dots}<text x="${L}" y="${H-6}">${fmtDate(pts[0].d)}</text><text x="${W-R}" y="${H-6}" text-anchor="end">${fmtDate(pts[pts.length-1].d)}</text></svg>`;
+}
+
+function renderCats(){
+  $("#cats").innerHTML=CATS.map(c=>{
+    const list=machines.filter(m=>m.cat===c.id);if(!list.length)return"";
+    return`<section class="cat" style="--c:var(--${c.id})"><h3>${c.nom} <small>${list.length} machine${list.length>1?"s":""}</small></h3><div class="grid">${list.map(m=>{
+      const b=best(m);
+      return`<button class="card" style="--c:var(--${m.cat})" data-id="${esc(m.id)}" aria-pressed="${m.id===sel}">
+        <div class="top">${logo(m)}<div class="name">${esc(m.nom)}</div></div>
+        ${b===null?`<div class="none">Pas encore de perf</div>`:`<div class="pr">${num(b)} <small>${unit(m)} max</small></div>${spark(m)}`}
+      </button>`}).join("")}</div></section>`}).join("");
+}
+
+function renderDetail(){
+  const m=byId(sel);if(!m)return;
+  const pts=m.perfs,b=best(m),u=unit(m);
+  const prog=pts.length>1?pts[pts.length-1].v-pts[0].v:null;
+  const pct=prog!==null&&pts[0].v?Math.round(prog/pts[0].v*100):null;
+  const d=$("#detail");d.style.setProperty("--c",`var(--${m.cat})`);
+  d.innerHTML=`
+    <div class="dhead">${logo(m,true)}<div><h2>${esc(m.nom)}</h2><div class="muscle">${esc(CATS.find(c=>c.id===m.cat)?.nom||"")} · ${pts.length} perf${pts.length>1?"s":""}</div></div></div>
+    <div class="stats">
+      <div class="stat"><b>${b===null?"—":num(b)+" "+u}</b><span>Record</span></div>
+      <div class="stat"><b>${pts.length?num(pts[0].v)+" "+u:"—"}</b><span>Départ</span></div>
+      <div class="stat"><b>${prog===null?"—":(prog>=0?"+":"")+num(prog)+" "+u+(pct!==null?` <small>(${pct>=0?"+":""}${pct} %)</small>`:"")}</b><span>Progression</span></div>
+    </div>
+    ${chart(m)}
+    ${pts.length?`<div class="tbl"><table><thead><tr><th>Date</th><th>Charge</th>${canWrite?"<th></th>":""}</tr></thead><tbody>
+      ${pts.map((p,i)=>({p,i})).reverse().map(({p,i})=>`<tr><td>${fmtDate(p.d)}</td><td class="n">${num(p.v)} ${u}</td>${canWrite?`<td><button class="del" data-del="${i}" aria-label="Supprimer ${num(p.v)} ${u}">✕</button></td>`:""}</tr>`).join("")}
+    </tbody></table></div>`:""}`;
+}
+
+function renderSelect(){
+  $("#fm").innerHTML=CATS.map(c=>{const l=machines.filter(m=>m.cat===c.id);return l.length?`<optgroup label="${c.nom}">${l.map(m=>`<option value="${esc(m.id)}">${esc(m.nom)}</option>`).join("")}</optgroup>`:""}).join("");
+  if(sel)$("#fm").value=sel;
+}
+function render(){renderCats();renderDetail();renderSelect()}
+
+// Stockage : data.json dans le dépôt GitHub. Le propriétaire et le dépôt se déduisent de l'adresse <owner>.github.io/<repo>/
+const OWNER=location.hostname.endsWith(".github.io")?location.hostname.split(".")[0]:null;
+const REPO=OWNER?location.pathname.split("/")[1]:null;
+const API=OWNER?`https://api.github.com/repos/${OWNER}/${REPO}/contents/data.json`:null;
+const store={get:k=>{try{return localStorage.getItem(k)||""}catch{return""}},set:(k,v)=>{try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch{}}};
+let token=store.get("gh-token"),sha=null;
+const hdr=()=>({Accept:"application/vnd.github+json",Authorization:`Bearer ${token}`});
+const b64dec=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g,"")),c=>c.charCodeAt(0)));
+const b64enc=s=>{const b=new TextEncoder().encode(s);let r="";for(let i=0;i<b.length;i+=0x8000)r+=String.fromCharCode(...b.subarray(i,i+0x8000));return btoa(r)};
+
+async function loadData(){
+  if(token&&API){
+    const r=await fetch(API,{headers:hdr(),cache:"no-store"});
+    if(r.status===401){throw new Error("jeton")}
+    if(!r.ok)throw new Error("github "+r.status);
+    const j=await r.json();sha=j.sha;return JSON.parse(b64dec(j.content));
+  }
+  // sans jeton : copie publiée par GitHub Pages (peut avoir quelques minutes de retard)
+  const r=await fetch("data.json?t="+Date.now(),{cache:"no-store"});
+  if(!r.ok)throw new Error("data "+r.status);
+  return r.json();
+}
+function apply(data){
+  machines=(data.machines||[]).filter(m=>m&&m.id&&m.cat&&Array.isArray(m.perfs)).sort((a,b)=>a.o-b.o);
+  if(!byId(sel)&&machines.length)sel=machines[0].id;
+  const n=machines.reduce((s,m)=>s+m.perfs.length,0);
+  $("#status").textContent=machines.length?`${machines.length} machines · ${n} perfs notées`:"Aucune machine pour l'instant";
+  render();
+}
+// Relit le fichier, applique la modification et l'enregistre ; un conflit (409) relance une fois.
+async function mutate(fn,message){
+  for(let tryNo=0;tryNo<2;tryNo++){
+    const data=await loadData();
+    const m=(data.machines||[]).find(x=>x.id===sel);
+    if(!m)throw new Error("machine");
+    fn(m);
+    const r=await fetch(API,{method:"PUT",headers:hdr(),body:JSON.stringify({message,sha,content:b64enc(JSON.stringify(data,null,1)+"\n")})});
+    if(r.ok){sha=(await r.json()).content.sha;apply(data);return}
+    if(r.status!==409)throw new Error("github "+r.status);
+  }
+  throw new Error("conflit");
+}
+async function refresh(){
+  try{apply(await loadData())}
+  catch(e){$("#status").textContent=e.message==="jeton"?"Jeton GitHub refusé : vérifie-le dans « Connexion GitHub ».":"Impossible de charger les perfs. Vérifie ta connexion."}
+}
+function updateAccess(){
+  canWrite=!!(token&&API);
+  $("#addPanel").hidden=!canWrite;
+  $("#tok").value="";
+  $("#ghState").textContent=!API?"Cette copie n'est pas sur GitHub Pages : lecture seule.":token?`Connecté au dépôt ${OWNER}/${REPO}.`:"Pas de jeton : tu peux consulter, mais pas enregistrer.";
+  if(!token&&API)$("#gh").open=true;
+}
+
+$("#fd").value=new Date().toLocaleDateString("sv-SE");
+const openSide=on=>{$("#side").classList.toggle("open",on);if(on)$("#side").scrollTop=0;else document.querySelector(`.card[data-id="${CSS.escape(sel||"")}"]`)?.focus()};
+$("#cats").addEventListener("click",e=>{const b=e.target.closest(".card");if(b){sel=b.dataset.id;render();openSide(true)}});
+$("#close").addEventListener("click",()=>openSide(false));
+document.addEventListener("keydown",e=>{if(e.key==="Escape")openSide(false)});
+$("#fm").addEventListener("change",e=>{sel=e.target.value;render()});
+$("#detail").addEventListener("click",async e=>{
+  const b=e.target.closest("[data-del]"),m=byId(sel);if(!b||!m||!canWrite)return;
+  const i=+b.dataset.del,old=m.perfs[i];
+  b.disabled=true;
+  // ne supprime que si la ligne est toujours la même après relecture
+  try{await mutate(x=>{const p=x.perfs[i];if(p&&p.v===old.v&&p.d===old.d)x.perfs.splice(i,1)},`Suppression ${m.nom} ${old.v}`)}
+  catch{$("#msg").textContent="Suppression impossible, réessaie.";b.disabled=false}
+});
+$("#f").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const m=byId($("#fm").value),v=+$("#fp").value,d=$("#fd").value;
+  if(!m||!(v>0)||!/^\d{4}-\d{2}-\d{2}$/.test(d)){$("#msg").textContent="Choisis une machine, une charge et une date.";return}
+  if(!canWrite){$("#msg").textContent="Ajoute ton jeton GitHub pour enregistrer.";return}
+  sel=m.id;
+  const btn=e.submitter;if(btn)btn.disabled=true;
+  $("#msg").textContent="Enregistrement…";
+  try{await mutate(x=>x.perfs.push({v,d}),`${m.nom} ${v} ${unit(m)} le ${d}`);$("#msg").textContent=`Enregistré : ${m.nom}, ${num(v)} ${unit(m)}.`;$("#fp").value=""}
+  catch(err){$("#msg").textContent=err.message==="jeton"?"Jeton GitHub refusé : vérifie-le dans « Connexion GitHub ».":"Échec de l'enregistrement, réessaie."}
+  finally{if(btn)btn.disabled=false}
+});
+$("#tokSave").addEventListener("click",()=>{const v=$("#tok").value.trim();if(!v)return;token=v;store.set("gh-token",v);updateAccess();refresh()});
+$("#tokForget").addEventListener("click",()=>{token="";sha=null;store.set("gh-token","");updateAccess();refresh()});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")refresh()});
+
+updateAccess();
+refresh();
+</script>
+</body>
+</html>
