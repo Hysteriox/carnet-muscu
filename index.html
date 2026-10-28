@@ -100,6 +100,33 @@ input:focus-visible,select:focus-visible{outline:2px solid var(--fg);outline-off
 .btn:focus-visible{outline:3px solid var(--epaules);outline-offset:2px}
 #msg{font-size:13px;color:var(--muted);min-height:1.2em;margin:0}
 @media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}}
+.stats{grid-template-columns:repeat(auto-fit,minmax(88px,1fr))}
+.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px;display:grid;gap:2px;align-content:start;min-width:0}
+.tile b{font-family:var(--mono);font-size:1.4rem;font-weight:500;font-variant-numeric:tabular-nums;color:var(--c,var(--fg))}
+.tile span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.tile em{font-style:normal;font-size:12px;overflow-wrap:anywhere}
+#q{width:100%;font-size:16px;padding:10px 12px;background:var(--panel)}
+.badge{justify-self:start;font-family:var(--display);font-weight:800;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;background:var(--c);color:#fff;border-radius:3px;padding:0 6px}
+.goal{display:grid;gap:6px}
+.bar{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--c)}
+.split{display:flex;justify-content:space-between;gap:8px}
+.timer{display:grid;gap:10px}
+.clock{font-family:var(--mono);font-size:3rem;font-variant-numeric:tabular-nums;line-height:1}
+.timer.done .clock{color:var(--jambes)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:99px;padding:6px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.chip:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+.rec{color:var(--c,var(--fg));font-weight:600}
+.edit{all:unset;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:4px}
+.edit:hover,.edit:focus-visible{color:var(--fg);outline:1px solid var(--line)}
+.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px}
+.pick button{all:unset;cursor:pointer;border-radius:10px;display:grid;place-items:center;padding:3px;border:2px solid transparent}
+.pick button[aria-pressed="true"]{border-color:var(--fg)}
+.pick button:focus-visible{outline:2px solid var(--fg)}
+.pick .logo{width:44px;height:44px}
 </style>
 </head>
 <body>
@@ -113,23 +140,51 @@ input:focus-visible,select:focus-visible{outline:2px solid var(--fg);outline-off
     <p id="status">Chargement des machines…</p>
   </header>
 
+  <section class="summary" id="summary" aria-label="Résumé du mois"></section>
+  <input id="q" type="search" placeholder="Rechercher une machine…" aria-label="Rechercher une machine" autocomplete="off" spellcheck="false">
+
   <div class="main">
     <div id="cats"></div>
     <div class="side" id="side">
       <button class="btn close" id="close" type="button">← Retour aux machines</button>
       <section class="panel" id="detail" aria-live="polite"><p class="none">Choisis une machine pour voir sa progression.</p></section>
+      <section class="panel timer" id="timer">
+        <h2>Repos</h2>
+        <div class="clock" id="clock">1:30</div>
+        <div class="chips" id="durs">
+          <button class="chip" type="button" data-s="60">1:00</button>
+          <button class="chip" type="button" data-s="90">1:30</button>
+          <button class="chip" type="button" data-s="120">2:00</button>
+          <button class="chip" type="button" data-s="180">3:00</button>
+        </div>
+        <div class="row"><button class="btn" id="tStart" type="button">Démarrer</button><button class="btn ghost" id="tStop" type="button">Arrêter</button></div>
+      </section>
       <section class="panel" id="addPanel">
-        <h2>Nouvelle perf</h2>
+        <h2 id="fTitle">Nouvelle perf</h2>
         <form id="f">
           <label style="grid-column:1/-1">Machine<select id="fm"></select></label>
           <label>Charge<input id="fp" type="number" min="0.1" step="0.1" inputmode="decimal" required></label>
-          <label>Date<input id="fd" type="date" required></label>
-          <button class="btn" type="submit">Enregistrer</button>
+          <label>Séries<input id="fs" type="number" min="1" step="1" inputmode="numeric" placeholder="—"></label>
+          <label>Reps<input id="fr" type="number" min="1" step="1" inputmode="numeric" placeholder="—"></label>
+          <label>Date<input id="fd" type="date"></label>
+          <button class="btn" type="submit" id="fBtn">Enregistrer</button>
+          <button class="btn ghost" type="button" id="fCancel" hidden>Annuler</button>
         </form>
         <p id="msg"></p>
       </section>
     </div>
   </div>
+  <details class="panel" id="newM">
+    <summary>Ajouter une machine</summary>
+    <form id="nf">
+      <label style="grid-column:1/-1">Nom<input id="nn" maxlength="60" required autocomplete="off"></label>
+      <label>Catégorie<select id="nc"></select></label>
+      <label>Unité<select id="nu"><option value="kg">kg</option><option value="km">km</option></select></label>
+      <div style="grid-column:1/-1;display:grid;gap:4px"><span class="muscle">Pictogramme</span><div class="pick" id="np"></div></div>
+      <button class="btn" type="submit">Ajouter</button>
+    </form>
+    <p class="hint" id="nmsg"></p>
+  </details>
   <details class="panel" id="gh">
     <summary>Connexion GitHub</summary>
     <p class="hint" id="ghState"></p>
@@ -138,7 +193,6 @@ input:focus-visible,select:focus-visible{outline:2px solid var(--fg);outline-off
     <p class="hint">Le jeton reste uniquement sur cet appareil. Il permet à l'appli d'enregistrer tes perfs dans le fichier data.json de ton dépôt GitHub.</p>
   </details>
 </div>
-
 <script>
 const CATS=[
   {id:"jambes",nom:"Jambes"},{id:"pecs",nom:"Pectoraux"},{id:"dos",nom:"Dos"},{id:"epaules",nom:"Épaules"},
@@ -179,11 +233,6 @@ const num=n=>(Math.round(n*10)/10).toLocaleString("fr-FR");
 const fmtDate=d=>d?new Date(d+"T12:00").toLocaleDateString("fr-FR",{day:"numeric",month:"short"}):"départ";
 const logo=(m,big)=>`<span class="logo${big?" big":""}" style="--c:var(--${m.cat})" aria-hidden="true"><svg viewBox="0 0 48 48">${P[m.picto]||P.chest}</svg></span>`;
 
-let machines=[],sel=null,canWrite=false;
-const byId=id=>machines.find(m=>m.id===id);
-const unit=m=>m.unite||"kg";
-const best=m=>m.perfs.length?Math.max(...m.perfs.map(p=>p.v)):null;
-
 function spark(m){
   const pts=m.perfs;if(pts.length<2)return"";
   const ys=pts.map(p=>p.v),lo=Math.min(...ys),span=Math.max(...ys)-lo||1;
@@ -206,22 +255,64 @@ function chart(m){
   return`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Évolution de la charge">${grid}<polygon points="${L},${H-B} ${line} ${x(pts.length-1)},${H-B}" fill="${c}" opacity=".12"/><polyline points="${line}" fill="none" stroke="${c}" stroke-width="2.5"/>${dots}<text x="${L}" y="${H-6}">${fmtDate(pts[0].d)}</text><text x="${W-R}" y="${H-6}" text-anchor="end">${fmtDate(pts[pts.length-1].d)}</text></svg>`;
 }
 
+let machines=[],sel=null,canWrite=false,query="",editIdx=null,newPicto="chest";
+const byId=id=>machines.find(m=>m.id===id);
+const unit=m=>m.unite||"kg";
+const best=m=>m.perfs.length?Math.max(...m.perfs.map(p=>p.v)):null;
+const norm=s=>String(s).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+const today=()=>new Date().toLocaleDateString("sv-SE");
+const lastDate=m=>m.perfs.reduce((a,p)=>p.d&&p.d>a?p.d:a,"");
+// record = perf strictement au-dessus de toutes les précédentes
+const isRecordAt=(m,i)=>i>0&&m.perfs[i].v>Math.max(...m.perfs.slice(0,i).map(p=>p.v));
+const recentRecord=m=>{const i=m.perfs.length-1,p=m.perfs[i];return!!p&&!!p.d&&(Date.now()-new Date(p.d+"T12:00"))/864e5<=14&&isRecordAt(m,i)};
+// Epley : 1RM ≈ charge × (1 + reps/30)
+const oneRM=p=>p.r?p.v*(1+p.r/30):null;
+const setsReps=p=>p.s&&p.r?`${p.s} × ${p.r}`:p.r?`${p.r} reps`:p.s?`${p.s} séries`:"—";
+
+function card(m){
+  const b=best(m);
+  return`<button class="card" style="--c:var(--${m.cat})" data-id="${esc(m.id)}" aria-pressed="${m.id===sel}">
+    <div class="top">${logo(m)}<div class="name">${esc(m.nom)}</div></div>
+    ${recentRecord(m)?`<span class="badge">Nouveau record</span>`:""}
+    ${b===null?`<div class="none">Pas encore de perf</div>`:`<div class="pr">${num(b)} <small>${unit(m)} max</small></div>${spark(m)}`}
+  </button>`;
+}
+
+function renderSummary(){
+  const mo=today().slice(0,7);let n=0,rec=0,top=null;
+  for(const m of machines){
+    m.perfs.forEach((p,i)=>{if(p.d&&p.d.startsWith(mo)){n++;if(isRecordAt(m,i))rec++}});
+    const first=m.perfs[0]?.v;
+    if(m.perfs.length>1&&first>0){const g=(best(m)-first)/first;if(!top||g>top.g)top={m,g}}
+  }
+  const mois=new Date().toLocaleDateString("fr-FR",{month:"long"});
+  $("#summary").innerHTML=`
+    <div class="tile"><span>Perfs en ${mois}</span><b>${n}</b></div>
+    <div class="tile"><span>Records en ${mois}</span><b>${rec}</b></div>
+    <div class="tile"${top?` style="--c:var(--${top.m.cat})"`:""}><span>Meilleure progression</span>${top?`<b>+${Math.round(top.g*100)} %</b><em>${esc(top.m.nom)}</em>`:"<b>—</b>"}</div>`;
+}
+
 function renderCats(){
-  $("#cats").innerHTML=CATS.map(c=>{
-    const list=machines.filter(m=>m.cat===c.id);if(!list.length)return"";
-    return`<section class="cat" style="--c:var(--${c.id})"><h3>${c.nom} <small>${list.length} machine${list.length>1?"s":""}</small></h3><div class="grid">${list.map(m=>{
-      const b=best(m);
-      return`<button class="card" style="--c:var(--${m.cat})" data-id="${esc(m.id)}" aria-pressed="${m.id===sel}">
-        <div class="top">${logo(m)}<div class="name">${esc(m.nom)}</div></div>
-        ${b===null?`<div class="none">Pas encore de perf</div>`:`<div class="pr">${num(b)} <small>${unit(m)} max</small></div>${spark(m)}`}
-      </button>`}).join("")}</div></section>`}).join("");
+  const q=norm(query.trim()),match=m=>!q||norm(m.nom).includes(q);
+  let html="";
+  if(!q){
+    const recent=machines.filter(lastDate).sort((a,b)=>lastDate(b).localeCompare(lastDate(a))).slice(0,6);
+    if(recent.length)html+=`<section class="cat" style="--c:var(--fg)"><h3>Récemment <small>dernières machines utilisées</small></h3><div class="grid">${recent.map(card).join("")}</div></section>`;
+  }
+  html+=CATS.map(c=>{
+    const list=machines.filter(m=>m.cat===c.id&&match(m));if(!list.length)return"";
+    return`<section class="cat" style="--c:var(--${c.id})"><h3>${c.nom} <small>${list.length} machine${list.length>1?"s":""}</small></h3><div class="grid">${list.map(card).join("")}</div></section>`;
+  }).join("");
+  $("#cats").innerHTML=html||`<p class="none">Aucune machine ne correspond à « ${esc(query)} ».</p>`;
 }
 
 function renderDetail(){
   const m=byId(sel);if(!m)return;
-  const pts=m.perfs,b=best(m),u=unit(m);
-  const prog=pts.length>1?pts[pts.length-1].v-pts[0].v:null;
+  const pts=m.perfs,b=best(m),u=unit(m),g=m.objectif;
+  const prog=pts.length>1?b-pts[0].v:null;
   const pct=prog!==null&&pts[0].v?Math.round(prog/pts[0].v*100):null;
+  const rms=pts.map(oneRM).filter(Boolean),rm=rms.length?Math.max(...rms):null;
+  const gp=g?Math.min(100,(b||0)/g*100):0;
   const d=$("#detail");d.style.setProperty("--c",`var(--${m.cat})`);
   d.innerHTML=`
     <div class="dhead">${logo(m,true)}<div><h2>${esc(m.nom)}</h2><div class="muscle">${esc(CATS.find(c=>c.id===m.cat)?.nom||"")} · ${pts.length} perf${pts.length>1?"s":""}</div></div></div>
@@ -229,10 +320,17 @@ function renderDetail(){
       <div class="stat"><b>${b===null?"—":num(b)+" "+u}</b><span>Record</span></div>
       <div class="stat"><b>${pts.length?num(pts[0].v)+" "+u:"—"}</b><span>Départ</span></div>
       <div class="stat"><b>${prog===null?"—":(prog>=0?"+":"")+num(prog)+" "+u+(pct!==null?` <small>(${pct>=0?"+":""}${pct} %)</small>`:"")}</b><span>Progression</span></div>
+      ${rm?`<div class="stat"><b>${num(rm)} ${u}</b><span>Max estimé (1 rép.)</span></div>`:""}
+    </div>
+    <div class="goal">
+      ${g?`<div class="split"><span class="muscle">Objectif ${num(g)} ${u}</span><span class="muscle">${Math.round(gp)} %</span></div>
+        <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(gp)}" aria-label="Progression vers l'objectif"><i style="width:${gp}%"></i></div>
+        <p class="hint${b>=g?" rec":""}">${b>=g?"Objectif atteint !":`Encore ${num(g-(b||0))} ${u} à prendre.`}</p>`:`<p class="hint">Pas encore d'objectif sur cette machine.</p>`}
+      ${canWrite?`<div class="row"><input id="goalIn" type="number" min="0" step="0.5" inputmode="decimal" placeholder="Objectif (${u})" value="${g||""}" style="flex:1" aria-label="Objectif en ${u}"><button class="btn ghost" id="goalSave" type="button">${g?"Modifier":"Fixer l'objectif"}</button></div>`:""}
     </div>
     ${chart(m)}
-    ${pts.length?`<div class="tbl"><table><thead><tr><th>Date</th><th>Charge</th>${canWrite?"<th></th>":""}</tr></thead><tbody>
-      ${pts.map((p,i)=>({p,i})).reverse().map(({p,i})=>`<tr><td>${fmtDate(p.d)}</td><td class="n">${num(p.v)} ${u}</td>${canWrite?`<td><button class="del" data-del="${i}" aria-label="Supprimer ${num(p.v)} ${u}">✕</button></td>`:""}</tr>`).join("")}
+    ${pts.length?`<div class="tbl"><table><thead><tr><th>Date</th><th>Séries × reps</th><th>Charge</th>${canWrite?"<th></th>":""}</tr></thead><tbody>
+      ${pts.map((p,i)=>({p,i})).reverse().map(({p,i})=>`<tr><td>${fmtDate(p.d)}</td><td class="n">${setsReps(p)}</td><td class="n">${num(p.v)} ${u}</td>${canWrite?`<td style="white-space:nowrap"><button class="edit" data-edit="${i}" aria-label="Modifier ${num(p.v)} ${u}">✎</button><button class="del" data-del="${i}" aria-label="Supprimer ${num(p.v)} ${u}">✕</button></td>`:""}</tr>`).join("")}
     </tbody></table></div>`:""}`;
 }
 
@@ -240,7 +338,10 @@ function renderSelect(){
   $("#fm").innerHTML=CATS.map(c=>{const l=machines.filter(m=>m.cat===c.id);return l.length?`<optgroup label="${c.nom}">${l.map(m=>`<option value="${esc(m.id)}">${esc(m.nom)}</option>`).join("")}</optgroup>`:""}).join("");
   if(sel)$("#fm").value=sel;
 }
-function render(){renderCats();renderDetail();renderSelect()}
+function renderPicker(){
+  $("#np").innerHTML=Object.keys(P).map(k=>`<button type="button" data-p="${k}" aria-pressed="${k===newPicto}" aria-label="Pictogramme ${k}">${logo({cat:$("#nc").value,picto:k})}</button>`).join("");
+}
+function render(){renderSummary();renderCats();renderDetail();renderSelect()}
 
 // Stockage : data.json dans le dépôt GitHub. Le propriétaire et le dépôt se déduisent de l'adresse <owner>.github.io/<repo>/
 const OWNER=location.hostname.endsWith(".github.io")?location.hostname.split(".")[0]:null;
@@ -271,19 +372,19 @@ function apply(data){
   $("#status").textContent=machines.length?`${machines.length} machines · ${n} perfs notées`:"Aucune machine pour l'instant";
   render();
 }
-// Relit le fichier, applique la modification et l'enregistre ; un conflit (409) relance une fois.
+const findM=(data,id)=>{const m=(data.machines||[]).find(x=>x.id===id);if(!m)throw new Error("machine");return m};
+// Relit le fichier, applique la modification sur les données fraîches et l'enregistre ; un conflit (409) relance une fois.
 async function mutate(fn,message){
   for(let tryNo=0;tryNo<2;tryNo++){
     const data=await loadData();
-    const m=(data.machines||[]).find(x=>x.id===sel);
-    if(!m)throw new Error("machine");
-    fn(m);
+    fn(data);
     const r=await fetch(API,{method:"PUT",headers:hdr(),body:JSON.stringify({message,sha,content:b64enc(JSON.stringify(data,null,1)+"\n")})});
     if(r.ok){sha=(await r.json()).content.sha;apply(data);return}
     if(r.status!==409)throw new Error("github "+r.status);
   }
   throw new Error("conflit");
 }
+const errText=err=>err.message==="jeton"?"Jeton GitHub refusé : vérifie-le dans « Connexion GitHub ».":err.message==="changé"?"Cette perf a changé entre-temps, recharge et réessaie.":"Échec de l'enregistrement, réessaie.";
 async function refresh(){
   try{apply(await loadData())}
   catch(e){$("#status").textContent=e.message==="jeton"?"Jeton GitHub refusé : vérifie-le dans « Connexion GitHub ».":"Impossible de charger les perfs. Vérifie ta connexion."}
@@ -291,40 +392,127 @@ async function refresh(){
 function updateAccess(){
   canWrite=!!(token&&API);
   $("#addPanel").hidden=!canWrite;
+  $("#newM").hidden=!canWrite;
   $("#tok").value="";
   $("#ghState").textContent=!API?"Cette copie n'est pas sur GitHub Pages : lecture seule.":token?`Connecté au dépôt ${OWNER}/${REPO}.`:"Pas de jeton : tu peux consulter, mais pas enregistrer.";
   if(!token&&API)$("#gh").open=true;
+  renderDetail();
 }
 
-$("#fd").value=new Date().toLocaleDateString("sv-SE");
+// --- Saisie / modification d'une perf ---
+function exitEdit(){
+  editIdx=null;$("#fTitle").textContent="Nouvelle perf";$("#fBtn").textContent="Enregistrer";$("#fCancel").hidden=true;$("#fm").disabled=false;
+  $("#fp").value="";$("#fs").value="";$("#fr").value="";$("#fd").value=today();
+}
+function startEdit(i){
+  const m=byId(sel),p=m?.perfs[i];if(!p)return;
+  editIdx=i;$("#fTitle").textContent="Modifier la perf";$("#fBtn").textContent="Modifier";$("#fCancel").hidden=false;$("#fm").disabled=true;
+  $("#fp").value=p.v;$("#fs").value=p.s||"";$("#fr").value=p.r||"";$("#fd").value=p.d||"";
+  $("#addPanel").scrollIntoView({behavior:"smooth",block:"start"});$("#fp").focus({preventScroll:true});
+}
+$("#fd").value=today();
 const openSide=on=>{$("#side").classList.toggle("open",on);if(on)$("#side").scrollTop=0;else document.querySelector(`.card[data-id="${CSS.escape(sel||"")}"]`)?.focus()};
-$("#cats").addEventListener("click",e=>{const b=e.target.closest(".card");if(b){sel=b.dataset.id;render();openSide(true)}});
+$("#cats").addEventListener("click",e=>{const b=e.target.closest(".card");if(b){if(b.dataset.id!==sel)exitEdit();sel=b.dataset.id;$("#msg").textContent="";render();openSide(true)}});
 $("#close").addEventListener("click",()=>openSide(false));
 document.addEventListener("keydown",e=>{if(e.key==="Escape")openSide(false)});
 $("#fm").addEventListener("change",e=>{sel=e.target.value;render()});
+$("#q").addEventListener("input",e=>{query=e.target.value;renderCats()});
+$("#fCancel").addEventListener("click",()=>{exitEdit();$("#msg").textContent=""});
+
 $("#detail").addEventListener("click",async e=>{
-  const b=e.target.closest("[data-del]"),m=byId(sel);if(!b||!m||!canWrite)return;
+  const m=byId(sel);if(!m||!canWrite)return;
+  const ed=e.target.closest("[data-edit]");if(ed){startEdit(+ed.dataset.edit);return}
+  if(e.target.closest("#goalSave")){
+    const v=+$("#goalIn").value,btn=e.target.closest("#goalSave");
+    if(!(v>=0)){$("#msg").textContent="Objectif invalide.";return}
+    btn.disabled=true;
+    try{await mutate(data=>{const x=findM(data,m.id);if(v>0)x.objectif=v;else delete x.objectif},`Objectif ${m.nom} ${v||"supprimé"}`)}
+    catch(err){$("#msg").textContent=errText(err);btn.disabled=false}
+    return;
+  }
+  const b=e.target.closest("[data-del]");if(!b)return;
   const i=+b.dataset.del,old=m.perfs[i];
   b.disabled=true;
   // ne supprime que si la ligne est toujours la même après relecture
-  try{await mutate(x=>{const p=x.perfs[i];if(p&&p.v===old.v&&p.d===old.d)x.perfs.splice(i,1)},`Suppression ${m.nom} ${old.v}`)}
-  catch{$("#msg").textContent="Suppression impossible, réessaie.";b.disabled=false}
+  try{await mutate(data=>{const x=findM(data,m.id),p=x.perfs[i];if(!p||p.v!==old.v||p.d!==old.d)throw new Error("changé");x.perfs.splice(i,1)},`Suppression ${m.nom} ${old.v}`);if(editIdx!==null)exitEdit()}
+  catch(err){$("#msg").textContent=errText(err);b.disabled=false}
 });
+
 $("#f").addEventListener("submit",async e=>{
   e.preventDefault();
-  const m=byId($("#fm").value),v=+$("#fp").value,d=$("#fd").value;
-  if(!m||!(v>0)||!/^\d{4}-\d{2}-\d{2}$/.test(d)){$("#msg").textContent="Choisis une machine, une charge et une date.";return}
+  const m=byId($("#fm").value),v=+$("#fp").value,s=+$("#fs").value||0,r=+$("#fr").value||0,d=$("#fd").value;
+  const old=editIdx!==null?m?.perfs[editIdx]:null;
+  const dateOk=/^\d{4}-\d{2}-\d{2}$/.test(d)||(!d&&old&&!old.d);
+  if(!m||!(v>0)||!dateOk||!Number.isInteger(s)||!Number.isInteger(r)||s<0||r<0){$("#msg").textContent="Vérifie la charge, la date, les séries et les reps.";return}
   if(!canWrite){$("#msg").textContent="Ajoute ton jeton GitHub pour enregistrer.";return}
+  const perf={v};if(d)perf.d=d;if(s)perf.s=s;if(r)perf.r=r;
   sel=m.id;
-  const btn=e.submitter;if(btn)btn.disabled=true;
-  $("#msg").textContent="Enregistrement…";
-  try{await mutate(x=>x.perfs.push({v,d}),`${m.nom} ${v} ${unit(m)} le ${d}`);$("#msg").textContent=`Enregistré : ${m.nom}, ${num(v)} ${unit(m)}.`;$("#fp").value=""}
-  catch(err){$("#msg").textContent=err.message==="jeton"?"Jeton GitHub refusé : vérifie-le dans « Connexion GitHub ».":"Échec de l'enregistrement, réessaie."}
-  finally{if(btn)btn.disabled=false}
+  const btn=$("#fBtn");btn.disabled=true;$("#msg").textContent="Enregistrement…";$("#msg").className="";
+  try{
+    if(old){
+      const i=editIdx;
+      await mutate(data=>{const x=findM(data,m.id),p=x.perfs[i];if(!p||p.v!==old.v||p.d!==old.d)throw new Error("changé");x.perfs[i]=perf},`Modification ${m.nom} ${v} ${unit(m)}`);
+      exitEdit();$("#msg").textContent="Perf modifiée.";
+    }else{
+      const prev=best(m);
+      await mutate(data=>findM(data,m.id).perfs.push(perf),`${m.nom} ${v} ${unit(m)} le ${d}`);
+      $("#fp").value="";
+      if(prev!==null&&v>prev){$("#msg").className="rec";$("#side").style.setProperty("--c",`var(--${m.cat})`);$("#msg").textContent=`Nouveau record ! +${num(v-prev)} ${unit(m)} sur ${m.nom}.`}
+      else $("#msg").textContent=`Enregistré : ${m.nom}, ${num(v)} ${unit(m)}.`;
+    }
+  }catch(err){$("#msg").textContent=errText(err)}
+  finally{btn.disabled=false}
 });
+
+// --- Nouvelle machine ---
+$("#nc").innerHTML=CATS.map(c=>`<option value="${c.id}">${c.nom}</option>`).join("");
+$("#nc").addEventListener("change",renderPicker);
+$("#np").addEventListener("click",e=>{const b=e.target.closest("[data-p]");if(b){newPicto=b.dataset.p;renderPicker()}});
+renderPicker();
+$("#nf").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const nom=$("#nn").value.trim(),cat=$("#nc").value,unite=$("#nu").value;
+  if(!nom||!CATS.some(c=>c.id===cat)||!P[newPicto]){$("#nmsg").textContent="Donne un nom à la machine.";return}
+  if(machines.some(m=>norm(m.nom)===norm(nom))){$("#nmsg").textContent="Cette machine existe déjà.";return}
+  const base=norm(nom).replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,30)||"machine";
+  let id=base;
+  $("#nmsg").textContent="Ajout…";
+  try{
+    await mutate(data=>{
+      const list=data.machines||(data.machines=[]);
+      for(let k=2;list.some(m=>m.id===id);k++)id=`${base}-${k}`;
+      const o=Math.max(0,...list.filter(m=>m.cat===cat).map(m=>m.o||0))+1;
+      const m={id,cat,nom,o,picto:newPicto,perfs:[]};if(unite!=="kg")m.unite=unite;
+      list.push(m);
+    },`Nouvelle machine : ${nom}`);
+    $("#nn").value="";$("#nmsg").textContent=`${nom} ajoutée.`;$("#newM").open=false;
+    sel=id;exitEdit();render();openSide(true);
+  }catch(err){$("#nmsg").textContent=errText(err)}
+});
+
+// --- Minuteur de repos (basé sur l'heure de fin, donc juste même si l'écran s'est mis en veille) ---
+let tDur=+store.get("repos")||90,tEnd=0,tInt=null,actx=null;
+const fmtT=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`;
+function showDur(){document.querySelectorAll("#durs .chip").forEach(c=>c.setAttribute("aria-pressed",+c.dataset.s===tDur));if(!tInt)$("#clock").textContent=fmtT(tDur)}
+function beep(){if(!actx)return;try{[0,.35,.7].forEach(t=>{const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=880;g.gain.value=.25;o.connect(g).connect(actx.destination);o.start(actx.currentTime+t);o.stop(actx.currentTime+t+.2)})}catch{}}
+function tick(){const left=Math.max(0,Math.ceil((tEnd-Date.now())/1000));$("#clock").textContent=fmtT(left);if(!left)stopTimer(true)}
+function startTimer(){
+  try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();actx.resume()}catch{}
+  tEnd=Date.now()+tDur*1000;$("#timer").classList.remove("done");clearInterval(tInt);tInt=setInterval(tick,250);tick();$("#tStart").textContent="Relancer";
+}
+function stopTimer(done){
+  clearInterval(tInt);tInt=null;$("#tStart").textContent="Démarrer";
+  if(done){$("#timer").classList.add("done");$("#clock").textContent="0:00";beep();try{navigator.vibrate?.([300,150,300])}catch{}}
+  else{$("#timer").classList.remove("done");$("#clock").textContent=fmtT(tDur)}
+}
+$("#durs").addEventListener("click",e=>{const c=e.target.closest("[data-s]");if(!c)return;tDur=+c.dataset.s;store.set("repos",String(tDur));showDur()});
+$("#tStart").addEventListener("click",startTimer);
+$("#tStop").addEventListener("click",()=>stopTimer(false));
+showDur();
+
 $("#tokSave").addEventListener("click",()=>{const v=$("#tok").value.trim();if(!v)return;token=v;store.set("gh-token",v);updateAccess();refresh()});
 $("#tokForget").addEventListener("click",()=>{token="";sha=null;store.set("gh-token","");updateAccess();refresh()});
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")refresh()});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState!=="visible")return;refresh();if(tInt)tick()});
 
 updateAccess();
 refresh();
