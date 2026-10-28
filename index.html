@@ -128,15 +128,15 @@ input:focus-visible,select:focus-visible{outline:2px solid var(--fg);outline-off
         </form>
         <p id="msg"></p>
       </section>
-      <details class="panel" id="gh">
-        <summary>Connexion GitHub</summary>
-        <p class="hint" id="ghState"></p>
-        <label>Jeton GitHub<input id="tok" type="password" autocomplete="off" spellcheck="false"></label>
-        <div class="row"><button class="btn" id="tokSave" type="button">Enregistrer</button><button class="btn ghost" id="tokForget" type="button">Oublier le jeton</button></div>
-        <p class="hint">Le jeton reste uniquement sur cet appareil. Il permet à l'appli d'enregistrer tes perfs dans le fichier data.json de ton dépôt GitHub.</p>
-      </details>
     </div>
   </div>
+  <details class="panel" id="gh">
+    <summary>Connexion GitHub</summary>
+    <p class="hint" id="ghState"></p>
+    <label>Jeton GitHub<input id="tok" type="password" autocomplete="off" spellcheck="false"></label>
+    <div class="row"><button class="btn" id="tokSave" type="button">Enregistrer</button><button class="btn ghost" id="tokForget" type="button">Oublier le jeton</button></div>
+    <p class="hint">Le jeton reste uniquement sur cet appareil. Il permet à l'appli d'enregistrer tes perfs dans le fichier data.json de ton dépôt GitHub.</p>
+  </details>
 </div>
 
 <script>
