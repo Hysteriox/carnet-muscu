@@ -384,7 +384,7 @@ async function mutate(fn,message){
   }
   throw new Error("conflit");
 }
-const errText=err=>err.message==="jeton"?"Jeton GitHub refusé : vérifie-le dans « Connexion GitHub ».":err.message==="changé"?"Cette perf a changé entre-temps, recharge et réessaie.":"Échec de l'enregistrement, réessaie.";
+const errText=err=>err.message==="jeton"?"Jeton GitHub refusé : vérifie-le dans « Connexion GitHub ».":err.message==="changé"?"Cette perf a changé entre-temps, recharge et réessaie.":err.message==="github 401"?"Jeton GitHub refusé ou expiré : recrée-le et colle-le dans « Connexion GitHub ».":err.message==="github 403"?"Jeton sans droit d'écriture : mets Contents sur « Read and write » pour le dépôt carnet-muscu.":err.message==="github 404"?"Le jeton n'a pas accès au dépôt carnet-muscu : sélectionne-le dans les réglages du jeton.":err instanceof TypeError?"Pas de connexion à GitHub : vérifie ton réseau et réessaie.":`Échec de l'enregistrement (${err.message}), réessaie.`;
 async function refresh(){
   try{apply(await loadData())}
   catch(e){$("#status").textContent=e.message==="jeton"?"Jeton GitHub refusé : vérifie-le dans « Connexion GitHub ».":"Impossible de charger les perfs. Vérifie ta connexion."}
