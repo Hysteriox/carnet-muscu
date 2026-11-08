@@ -1160,7 +1160,14 @@
    "nom": "Barre W ZIWA",
    "o": 55,
    "picto": "latraise",
-   "perfs": []
+   "perfs": [
+    {
+     "v": 20,
+     "d": "2026-11-08",
+     "s": 1,
+     "r": 20
+    }
+   ]
   }
  ],
  "seances": [
