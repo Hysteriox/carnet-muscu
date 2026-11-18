@@ -1589,7 +1589,14 @@
    "nom": "Supine la Press",
    "o": 28,
    "picto": "bench",
-   "perfs": []
+   "perfs": [
+    {
+     "v": 40,
+     "d": "2026-11-18",
+     "s": 2,
+     "r": 10
+    }
+   ]
   }
  ],
  "seances": [
