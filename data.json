@@ -1582,6 +1582,14 @@
      "r": 20
     }
    ]
+  },
+  {
+   "id": "supine-la-press",
+   "cat": "pecs",
+   "nom": "Supine la Press",
+   "o": 28,
+   "picto": "bench",
+   "perfs": []
   }
  ],
  "seances": [
