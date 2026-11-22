@@ -1634,7 +1634,14 @@
    "nom": "Poulie écarté",
    "o": 29,
    "picto": "reardelt",
-   "perfs": []
+   "perfs": [
+    {
+     "v": 9,
+     "d": "2026-11-22",
+     "s": 1,
+     "r": 15
+    }
+   ]
   }
  ],
  "seances": [
