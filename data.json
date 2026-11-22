@@ -1627,6 +1627,14 @@
      "r": 10
     }
    ]
+  },
+  {
+   "id": "poulie-ecarte",
+   "cat": "pecs",
+   "nom": "Poulie écarté",
+   "o": 29,
+   "picto": "reardelt",
+   "perfs": []
   }
  ],
  "seances": [
