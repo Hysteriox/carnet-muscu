@@ -150,14 +150,70 @@ input:focus-visible,select:focus-visible{outline:2px solid var(--fg);outline-off
 .day:focus-visible{outline:2px solid var(--fg);outline-offset:1px}
 .dots{display:flex;gap:2px;flex-wrap:wrap;justify-content:center}
 .dots i{width:6px;height:6px;border-radius:50%;background:var(--c)}
-#calP{gap:12px}
 #calBody{display:grid;gap:12px}
-#calP[open] summary{margin-bottom:12px}
 body.out .wrap>:not(header):not(#auth){display:none}
 body:not(.out) #auth{display:none}
+
+/* --- Habillage grand public : gros boutons, coins ronds, onglets en bas, couleur d'accent --- */
+:root{--accent:#1b1f1d;--on-accent:#d4f53c;--r:14px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent:#d4f53c;--on-accent:#161b02}}
+:root[data-theme="dark"]{--accent:#d4f53c;--on-accent:#161b02}
+body{font-size:16px;-webkit-tap-highlight-color:transparent}
+.wrap{gap:18px;padding-block:18px calc(96px + env(safe-area-inset-bottom,0px))}
+header{border-bottom:0;padding-bottom:0;align-items:center}
+h1{font-size:clamp(1.9rem,5vw,2.6rem)}
+body:not(.out) .sub{display:none}
+.panel,.tile,.card,.dayrow,.day{border-radius:var(--r)}
+.panel{padding:16px}
+.card{padding:14px;min-height:112px}
+.card:active,.dayrow:active,.chip:active,.btn:active{transform:scale(.97)}
+.btn{min-height:48px;border-radius:12px;padding:10px 18px;background:var(--accent);color:var(--on-accent)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.ghost{min-height:44px}
+input,select{min-height:48px;font-size:16px;border-radius:10px;padding:10px 12px}
+label{font-size:12px}
+.chip{min-height:40px;padding:8px 14px}
+.hint{font-size:14px}
+.edit,.del{padding:10px 12px;font-size:16px}
+td{padding:4px}
+#q{border-radius:99px;padding:12px 18px}
+#filt{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:-6px -16px 0;padding:0 16px 2px}
+#filt::-webkit-scrollbar{display:none}
+#filt .chip{flex:none;display:flex;align-items:center;gap:6px;background:var(--panel)}
+#filt .chip[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+#filt .chip i{width:9px;height:9px;border-radius:50%;background:var(--c)}
+.link{all:unset;cursor:pointer;color:var(--fg);font-weight:600;text-decoration:underline;text-underline-offset:3px;padding:8px 0}
+.link:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+#auth{max-width:440px;width:100%;justify-self:center}
+#af{grid-template-columns:1fr}
+.perks{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:14px;color:var(--muted)}
+.perks li::before{content:"✓";color:var(--dos);font-weight:700;margin-right:8px}
+.guide{grid-column:1/-1;display:grid;gap:12px}
+.guide ol{margin:0;padding:0;list-style:none;display:grid;gap:10px;counter-reset:g}
+.guide li{display:flex;gap:12px;align-items:center;counter-increment:g}
+.guide li::before{content:counter(g);flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-family:var(--display);font-weight:800}
+#last{margin-top:-8px}
+#tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;display:flex;justify-content:center;gap:4px;background:var(--panel);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+#tabs button{all:unset;box-sizing:border-box;cursor:pointer;flex:1;max-width:160px;min-height:52px;display:grid;justify-items:center;align-content:center;gap:2px;font-size:12px;color:var(--muted);border-radius:12px}
+#tabs svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#tabs button[aria-current="page"]{color:var(--fg);font-weight:600;background:var(--bg)}
+#tabs button:focus-visible{outline:2px solid var(--fg);outline-offset:-2px}
+body.out #tabs{display:none}
+body[data-tab="home"] :is(#calP,#gh){display:none}
+body[data-tab="cal"] .wrap>:not(header):not(#calP){display:none}
+body[data-tab="moi"] .wrap>:not(header):not(#gh){display:none}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);z-index:30;width:max-content;max-width:min(92vw,420px);background:var(--fg);color:var(--bg);border-radius:12px;padding:12px 16px;font-weight:500;font-size:15px;text-align:center;opacity:0;pointer-events:none}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:no-preference){#toast{transition:opacity .2s,transform .2s}.card,.btn,.chip,.dayrow{transition:transform .1s,border-color .15s}}
+@media (max-width:900px){
+  #addPanel{order:1}#detail{order:2}#timer{order:3}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .close{background:transparent;color:var(--fg);padding-left:0;min-height:44px}
+}
+@media (max-width:420px){.summary{gap:6px}.tile{padding:10px 8px}.tile b{font-size:1.2rem}.tile span{font-size:10px}}
 </style>
 </head>
-<body class="out">
+<body class="out" data-tab="home">
 
 <div class="wrap">
   <header>
@@ -169,28 +225,29 @@ body:not(.out) #auth{display:none}
   </header>
 
   <section class="panel" id="auth">
-    <h2>Connexion</h2>
+    <h2 id="aTitle">Connexion</h2>
+    <ul class="perks"><li>Note tes charges en quelques secondes</li><li>Vois ta progression machine par machine</li><li>Carnet privé : toi seul vois tes perfs</li></ul>
     <form id="af">
       <label style="grid-column:1/-1">E-mail<input id="ae" type="email" autocomplete="email" required></label>
       <label style="grid-column:1/-1">Mot de passe<input id="ap" type="password" autocomplete="current-password" minlength="6" required></label>
-      <button class="btn" type="submit">Se connecter</button>
-      <button class="btn ghost" type="button" id="aUp">Créer un compte</button>
+      <button class="btn" type="submit" id="aGo">Se connecter</button>
     </form>
     <p class="hint" id="amsg" aria-live="polite"></p>
-    <p class="hint">Chaque compte a son propre carnet, privé : personne d'autre ne voit tes perfs.</p>
+    <p class="hint"><span id="aAsk">Pas encore de compte ?</span> <button class="link" type="button" id="aUp">Créer un compte</button></p>
   </section>
 
   <section class="panel" id="sess" aria-label="Séance" hidden>
     <div id="sessBody" style="display:grid;gap:12px"></div>
     <p class="hint" id="sessMsg"></p>
   </section>
-  <details class="panel" id="calP">
-    <summary>Calendrier</summary>
+  <section class="panel" id="calP">
+    <h2>Calendrier</h2>
     <div id="calBody"></div>
-  </details>
+  </section>
 
   <section class="summary" id="summary" aria-label="Résumé du mois"></section>
   <input id="q" type="search" placeholder="Rechercher une machine…" aria-label="Rechercher une machine" autocomplete="off" spellcheck="false">
+  <div class="chips" id="filt" role="group" aria-label="Filtrer par groupe musculaire"></div>
 
   <div class="main">
     <div id="cats"></div>
@@ -210,6 +267,7 @@ body:not(.out) #auth{display:none}
       </section>
       <section class="panel" id="addPanel">
         <h2 id="fTitle">Nouvelle perf</h2>
+        <p class="hint" id="last"></p>
         <form id="f">
           <label style="grid-column:1/-1">Machine<select id="fm"></select></label>
           <label>Charge<input id="fp" type="number" min="0.1" step="0.1" inputmode="decimal" required></label>
@@ -234,12 +292,19 @@ body:not(.out) #auth{display:none}
     </form>
     <p class="hint" id="nmsg"></p>
   </details>
-  <details class="panel" id="gh">
-    <summary>Mon compte</summary>
+  <section class="panel" id="gh">
+    <h2>Mon compte</h2>
     <p class="hint" id="ghState"></p>
+    <p class="hint">Ton carnet est privé et enregistré en ligne : tu le retrouves sur tous tes appareils en te connectant.</p>
     <div class="row"><button class="btn ghost" id="logout" type="button">Se déconnecter</button></div>
-  </details>
+  </section>
 </div>
+<nav id="tabs" aria-label="Navigation">
+  <button type="button" data-tab="home" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6M6 6v12M18 6v12M21 9v6M6 12h12"/></svg>Machines</button>
+  <button type="button" data-tab="cal"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendrier</button>
+  <button type="button" data-tab="moi"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Compte</button>
+</nav>
+<div id="toast" role="status" aria-live="polite"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 const CATS=[
@@ -303,7 +368,10 @@ function chart(m){
   return`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Évolution de la charge">${grid}<polygon points="${L},${H-B} ${line} ${x(pts.length-1)},${H-B}" fill="${c}" opacity=".12"/><polyline points="${line}" fill="none" stroke="${c}" stroke-width="2.5"/>${dots}<text x="${L}" y="${H-6}">${fmtDate(pts[0].d)}</text><text x="${W-R}" y="${H-6}" text-anchor="end">${fmtDate(pts[pts.length-1].d)}</text></svg>`;
 }
 
-let machines=[],seances=[],sel=null,canWrite=false,query="",editIdx=null,newPicto="chest";
+let machines=[],seances=[],sel=null,canWrite=false,query="",catF="",editIdx=null,newPicto="chest";
+let toastT=0;
+function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("on"),3500)}
+function setTab(t){document.body.dataset.tab=t;document.querySelectorAll("#tabs button").forEach(b=>b.dataset.tab===t?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"))}
 const byId=id=>machines.find(m=>m.id===id);
 const unit=m=>m.unite||"kg";
 const best=m=>m.perfs.length?Math.max(...m.perfs.map(p=>p.v)):null;
@@ -333,6 +401,10 @@ function renderSummary(){
     const first=m.perfs[0]?.v;
     if(m.perfs.length>1&&first>0){const g=(best(m)-first)/first;if(!top||g>top.g)top={m,g}}
   }
+  if(!machines.some(m=>m.perfs.length)){
+    $("#summary").innerHTML=`<div class="panel guide"><h2>Bienvenue !</h2><ol><li>Touche la machine que tu utilises</li><li>Note ta charge, tes séries et tes reps</li><li>Reviens à chaque séance : ta courbe se dessine toute seule</li></ol></div>`;
+    return;
+  }
   const mois=new Date().toLocaleDateString("fr-FR",{month:"long"});
   $("#summary").innerHTML=`
     <div class="tile"><span>Perfs en ${mois}</span><b>${n}</b></div>
@@ -343,15 +415,16 @@ function renderSummary(){
 function renderCats(){
   const q=norm(query.trim()),match=m=>!q||norm(m.nom).includes(q);
   let html="";
-  if(!q){
+  $("#filt").innerHTML=[{id:"",nom:"Tout"},...CATS].map(c=>`<button class="chip" type="button" data-cat="${c.id}" aria-pressed="${c.id===catF}"${c.id?` style="--c:var(--${c.id})"><i></i>`:">"}${c.nom}</button>`).join("");
+  if(!q&&!catF){
     const recent=machines.filter(lastDate).sort((a,b)=>lastDate(b).localeCompare(lastDate(a))).slice(0,6);
     if(recent.length)html+=`<section class="cat" style="--c:var(--fg)"><h3>Récemment <small>dernières machines utilisées</small></h3><div class="grid">${recent.map(card).join("")}</div></section>`;
   }
-  html+=CATS.map(c=>{
+  html+=CATS.filter(c=>!catF||c.id===catF).map(c=>{
     const list=machines.filter(m=>m.cat===c.id&&match(m));if(!list.length)return"";
     return`<section class="cat" style="--c:var(--${c.id})"><h3>${c.nom} <small>${list.length} machine${list.length>1?"s":""}</small></h3><div class="grid">${list.map(card).join("")}</div></section>`;
   }).join("");
-  $("#cats").innerHTML=html||`<p class="none">Aucune machine ne correspond à « ${esc(query)} ».</p>`;
+  $("#cats").innerHTML=html||`<p class="none">Aucune machine ne correspond${q?` à « ${esc(query)} »`:""}. Tu peux l'ajouter en bas de page.</p>`;
 }
 
 function renderDetail(){
@@ -385,6 +458,8 @@ function renderDetail(){
 function renderSelect(){
   $("#fm").innerHTML=CATS.map(c=>{const l=machines.filter(m=>m.cat===c.id);return l.length?`<optgroup label="${c.nom}">${l.map(m=>`<option value="${esc(m.id)}">${esc(m.nom)}</option>`).join("")}</optgroup>`:""}).join("");
   if(sel)$("#fm").value=sel;
+  const m=byId(sel),p=m?.perfs[m.perfs.length-1];
+  $("#last").textContent=p?`Dernière fois : ${num(p.v)} ${unit(m)}${setsReps(p)==="—"?"":" · "+setsReps(p)}${p.d?" ("+fmtDate(p.d)+")":""}`:m?"Première perf sur cette machine.":"";
 }
 function renderPicker(){
   $("#np").innerHTML=Object.keys(P).map(k=>`<button type="button" data-p="${k}" aria-pressed="${k===newPicto}" aria-label="Pictogramme ${k}">${logo({cat:$("#nc").value,picto:k})}</button>`).join("");
@@ -427,7 +502,7 @@ function updateAccess(){
   canWrite=!!user;
   document.body.classList.toggle("out",!user);
   $("#ghState").textContent=user?`Connecté : ${user.email}`:"";
-  if(!user){machines=[];seances=[];sel=null;$("#status").textContent="Connecte-toi pour ouvrir ton carnet."}
+  if(!user){machines=[];seances=[];sel=null;setTab("home");$("#status").textContent=""}
 }
 const authErr=m=>/Invalid login/i.test(m)?"E-mail ou mot de passe incorrect.":/not confirmed/i.test(m)?"Confirme d'abord ton e-mail avec le lien reçu.":/already registered/i.test(m)?"Ce compte existe déjà : connecte-toi.":/at least/i.test(m)?"Mot de passe trop court (6 caractères minimum).":/fetch/i.test(m)?"Pas de connexion : vérifie ton réseau.":m;
 async function auth(signup){
@@ -437,10 +512,20 @@ async function auth(signup){
   const {data,error}=signup?await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}}):await sb.auth.signInWithPassword({email,password});
   $("#amsg").textContent=error?authErr(error.message):signup&&!data.session?"Compte créé. Ouvre le lien reçu par e-mail pour le confirmer, puis connecte-toi.":"";
   if(!error)$("#ap").value="";
-  if(signup&&data?.session)$("#sessMsg").textContent="Inscription réussie : tu es connecté. Bienvenue !";
+  if(signup&&data?.session)toast("Inscription réussie : tu es connecté. Bienvenue !");
 }
-$("#af").addEventListener("submit",e=>{e.preventDefault();auth(false)});
-$("#aUp").addEventListener("click",()=>auth(true));
+let signMode=false;
+$("#af").addEventListener("submit",e=>{e.preventDefault();auth(signMode)});
+$("#aUp").addEventListener("click",()=>{
+  signMode=!signMode;$("#amsg").textContent="";
+  $("#aTitle").textContent=signMode?"Créer mon compte":"Connexion";
+  $("#aGo").textContent=signMode?"Créer mon compte":"Se connecter";
+  $("#aAsk").textContent=signMode?"Déjà un compte ?":"Pas encore de compte ?";
+  $("#aUp").textContent=signMode?"Se connecter":"Créer un compte";
+  $("#ap").autocomplete=signMode?"new-password":"current-password";
+});
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(b){setTab(b.dataset.tab);scrollTo(0,0)}});
+$("#filt").addEventListener("click",e=>{const b=e.target.closest("[data-cat]");if(b){catF=b.dataset.cat;renderCats()}});
 $("#logout").addEventListener("click",()=>sb.auth.signOut());
 // setTimeout : supabase-js se bloque si on le rappelle depuis ce callback
 sb.auth.onAuthStateChange((_e,session)=>setTimeout(()=>{
@@ -461,7 +546,7 @@ function startEdit(i){
 }
 $("#fd").value=today();
 const openSide=on=>{$("#side").classList.toggle("open",on);if(on)$("#side").scrollTop=0;else document.querySelector(`.card[data-id="${CSS.escape(sel||"")}"]`)?.focus()};
-const openMachine=e=>{const b=e.target.closest("[data-id]");if(b){if(b.dataset.id!==sel)exitEdit();sel=b.dataset.id;$("#msg").textContent="";render();openSide(true)}};
+const openMachine=e=>{const b=e.target.closest("[data-id]");if(b){if(b.dataset.id!==sel)exitEdit();sel=b.dataset.id;$("#msg").textContent="";setTab("home");render();openSide(true)}};
 ["#cats","#sessBody","#calBody"].forEach(s=>$(s).addEventListener("click",openMachine));
 $("#close").addEventListener("click",()=>openSide(false));
 document.addEventListener("keydown",e=>{if(e.key==="Escape")openSide(false)});
@@ -482,6 +567,7 @@ $("#detail").addEventListener("click",async e=>{
   }
   const b=e.target.closest("[data-del]");if(!b)return;
   const i=+b.dataset.del,old=m.perfs[i];
+  if(!confirm(`Supprimer la perf de ${num(old.v)} ${unit(m)} (${fmtDate(old.d)}) ?`))return;
   b.disabled=true;
   // ne supprime que si la ligne est toujours la même après relecture
   try{await mutate(data=>{const x=findM(data,m.id),p=x.perfs[i];if(!p||p.v!==old.v||p.d!==old.d)throw new Error("changé");x.perfs.splice(i,1)},`Suppression ${m.nom} ${old.v}`);if(editIdx!==null)exitEdit()}
@@ -507,8 +593,8 @@ $("#f").addEventListener("submit",async e=>{
       const prev=best(m);
       await mutate(data=>findM(data,m.id).perfs.push(perf),`${m.nom} ${v} ${unit(m)} le ${d}`);
       $("#fp").value="";
-      if(prev!==null&&v>prev){$("#msg").className="rec";$("#side").style.setProperty("--c",`var(--${m.cat})`);$("#msg").textContent=`Nouveau record ! +${num(v-prev)} ${unit(m)} sur ${m.nom}.`}
-      else $("#msg").textContent=`Enregistré : ${m.nom}, ${num(v)} ${unit(m)}.`;
+      if(prev!==null&&v>prev){$("#msg").className="rec";$("#side").style.setProperty("--c",`var(--${m.cat})`);$("#msg").textContent=`Nouveau record ! +${num(v-prev)} ${unit(m)} sur ${m.nom}.`;toast(`Nouveau record ! +${num(v-prev)} ${unit(m)}`)}
+      else{$("#msg").textContent=`Enregistré : ${m.nom}, ${num(v)} ${unit(m)}.`;toast("Perf enregistrée")}
     }
   }catch(err){$("#msg").textContent=errText(err)}
   finally{btn.disabled=false}
