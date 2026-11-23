@@ -199,7 +199,22 @@ td{padding:4px}
 #tabs button[aria-current="page"]{color:var(--fg);font-weight:600;background:var(--bg)}
 #tabs button:focus-visible{outline:2px solid var(--fg);outline-offset:-2px}
 body.out #tabs{display:none}
-body[data-tab="home"] :is(#calP,#gh){display:none}
+body[data-tab="home"] :is(#calP,#gh,#rk){display:none}
+body[data-tab="rank"] .wrap>:not(header):not(#rk){display:none}
+.rank{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.rank li{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;min-width:0}
+.rank li.me{border-color:var(--fg);box-shadow:inset 0 0 0 1px var(--fg)}
+.rank b{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;background:var(--line)}
+.rank li:nth-child(1) b{background:#e0b020;color:#1b1f1d}
+.rank li:nth-child(2) b{background:#b8bfc4;color:#1b1f1d}
+.rank li:nth-child(3) b{background:#c98a52;color:#1b1f1d}
+.rank span{flex:1;min-width:0;overflow-wrap:anywhere;font-weight:500}
+.rank em{font-style:normal;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.how summary{font-size:1rem}
+.howb{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-top:12px}
+.logo.anim{width:132px;height:132px;border-radius:18px}
+.logo.anim svg{width:112px;height:112px;stroke-width:2.2}
+.howb ul{flex:1;min-width:150px;margin:0;padding-left:18px;display:grid;gap:6px;font-size:14px}
 body[data-tab="cal"] .wrap>:not(header):not(#calP){display:none}
 body[data-tab="moi"] .wrap>:not(header):not(#gh){display:none}
 #toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);z-index:30;width:max-content;max-width:min(92vw,420px);background:var(--fg);color:var(--bg);border-radius:12px;padding:12px 16px;font-weight:500;font-size:15px;text-align:center;opacity:0;pointer-events:none}
@@ -243,6 +258,12 @@ body[data-tab="moi"] .wrap>:not(header):not(#gh){display:none}
   <section class="panel" id="calP">
     <h2>Calendrier</h2>
     <div id="calBody"></div>
+  </section>
+
+  <section class="panel" id="rk">
+    <h2>Classement</h2>
+    <div id="rkBody" style="display:grid;gap:12px"></div>
+    <p class="hint" id="rkMsg" aria-live="polite"></p>
   </section>
 
   <section class="summary" id="summary" aria-label="Résumé du mois"></section>
@@ -302,6 +323,7 @@ body[data-tab="moi"] .wrap>:not(header):not(#gh){display:none}
 <nav id="tabs" aria-label="Navigation">
   <button type="button" data-tab="home" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6M6 6v12M18 6v12M21 9v6M6 12h12"/></svg>Machines</button>
   <button type="button" data-tab="cal"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendrier</button>
+  <button type="button" data-tab="rank"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H4c0 3 1.5 5 4 5M16 6h4c0 3-1.5 5-4 5M12 13v4M8 20h8M10 17h4"/></svg>Classement</button>
   <button type="button" data-tab="moi"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Compte</button>
 </nav>
 <div id="toast" role="status" aria-live="polite"></div>
@@ -337,14 +359,83 @@ const P={
   bench:'<path d="M4 34h34M10 34v8M32 34v8"/><circle class="h" cx="36" cy="28" r="3.5"/><path d="M32 30H10l-4 8M24 30V14M10 14h28M12 10v8M36 10v8"/>',
   shoulder:'<circle class="h" cx="24" cy="16" r="3.5"/><path d="M24 20v14M24 22l-9 1V8M24 22l9 1V8M10 8h8M30 8h8M16 36h16"/>',
   reardelt:'<circle class="h" cx="24" cy="12" r="3.5"/><path d="M24 16v18M24 20l-14-3M24 20l14-3M8 13v8M40 13v8M16 36h16"/>',
-  latraise:'<circle class="h" cx="24" cy="8" r="3.5"/><path d="M24 12v16l-4 12M24 28l4 12M24 16h14M24 16l-5 10"/><circle cx="41" cy="16" r="2.5"/>',
-  frontraise:'<circle class="h" cx="16" cy="8" r="3.5"/><path d="M16 12v16l-4 12M16 28l4 12M17 16h16M33 12v8M30 12h6M30 20h6"/>',
+  latraise:'<circle class="h" cx="24" cy="8" r="3.5"/><path d="M24 12v16l-4 12M24 28l4 12M24 16l14 0M24 16l-5 10"/><circle cx="41" cy="16" r="2.5"/>',
+  frontraise:'<circle class="h" cx="16" cy="8" r="3.5"/><path d="M16 12v16l-4 12M16 28l4 12M17 16l16 0M33 12v8M30 12h6M30 20h6"/>',
+};
+// Seconde pose de chaque pictogramme : mêmes éléments et mêmes commandes de tracé que P, seuls les nombres changent, pour que l'animation puisse interpoler
+const P2={
+  velo:'<circle cx="13" cy="36" r="6"/><circle cx="35" cy="36" r="6"/><path d="M13 36l8-11h11l3 11M21 25l-2-5h5"/><circle class="h" cx="27" cy="8" r="3.5"/><path d="M26 12l-5 9 5 3 3 6M25 14l8 5"/>',
+  adduction:'<circle class="h" cx="24" cy="7" r="3.5"/><path d="M24 11v14M24 15l-8 6M24 15l8 6M24 25l-4 14M24 25l4 14M4 33h6m-3-3 3 3-3 3M44 33h-6m3-3-3 3 3 3"/>',
+  abduction:'<circle class="h" cx="24" cy="7" r="3.5"/><path d="M24 11v14M24 15l-8 6M24 15l8 6M24 25l-12 12M24 25l12 12M12 33H5m3-3-3 3 3 3M36 33h7m-3-3 3 3-3 3"/>',
+  legpress:'<path d="M6 24l6 18"/><circle class="h" cx="9" cy="16" r="3.5"/><path d="M10 20l4 14 13-3 9-3M12 24l8 2M41 15l-5 22"/>',
+  glute:'<circle class="h" cx="9" cy="18" r="3.5"/><path d="M13 21h16M15 21v15M29 21v15h-4M29 21l6 14M6 38h36"/>',
+  legext:'<path d="M10 6v28h18"/><circle class="h" cx="16" cy="9" r="3.5"/><path d="M16 13v17h13l2 11"/><circle cx="33" cy="42" r="3"/>',
+  hack:'<path d="M10 6l8 34"/><circle class="h" cx="22" cy="6" r="3.5"/><path d="M22 10l2 15-2 8-1 7M18 13h10M14 42h14"/>',
+  legcurlassis:'<path d="M10 6v28"/><circle class="h" cx="16" cy="9" r="3.5"/><path d="M16 13v17h14l8 6M13 26h19"/><circle cx="40" cy="38" r="2.5"/>',
+  legcurlallonge:'<path d="M4 34h32M10 34v8M30 34v8"/><circle class="h" cx="8" cy="26" r="3.5"/><path d="M12 28h18l12 2"/><circle cx="44" cy="30" r="3"/>',
+  calf:'<circle class="h" cx="16" cy="8" r="3.5"/><path d="M16 12v14h14v8l5 3M12 22h22M41 36V26m-3 3 3-3 3 3"/>',
+  abdo:'<circle class="h" cx="30" cy="18" r="3.5"/><path d="M26 21l-9 9h14v10M26 22l7 4M10 8v26"/>',
+  row:'<circle class="h" cx="12" cy="10" r="3.5"/><path d="M12 14v18h14v8M13 20h6M19 20h23M36 12v22"/>',
+  pulldown:'<path d="M8 14q16-6 32 0M24 3v10"/><circle class="h" cx="24" cy="16" r="3.5"/><path d="M24 20v14M24 22l-10 2-1-9M24 22l10 2 1-9M16 36h16M24 34h8v8"/>',
+  pushdown:'<path d="M30 4v26M26 30h8"/><circle class="h" cx="16" cy="8" r="3.5"/><path d="M16 12v16l-4 12M16 28l4 12M17 16l3 6 7 8"/>',
+  overhead:'<circle class="h" cx="22" cy="14" r="3.5"/><path d="M22 18v12l-4 12M22 30l4 12M22 20l5-8 6 2M36 44L33 14"/>',
+  dip:'<circle class="h" cx="24" cy="5" r="3.5"/><path d="M24 9v16M24 12l-9 3v15M24 12l9 3v15M16 32h16M24 37v7m-3-3 3 3 3-3"/>',
+  curlcable:'<circle class="h" cx="16" cy="8" r="3.5"/><path d="M16 12v16l-4 12M16 28l4 12M17 15v9l7 6M24 30l14 12"/>',
+  marteau:'<circle class="h" cx="16" cy="8" r="3.5"/><path d="M16 12v16l-4 12M16 28l4 12M17 15v9l8 4M25 22v12M22 22h6M22 34h6"/>',
+  armcurl:'<circle class="h" cx="10" cy="10" r="3.5"/><path d="M10 14v18h10v10M10 18l12 8 10-3M18 30l16-6"/><circle cx="34" cy="21" r="2.5"/>',
+  pecfly:'<circle class="h" cx="24" cy="9" r="3.5"/><path d="M24 13v19M24 17q-6 2-4 8M24 17q6 2 4 8M20 21v8M28 21v8M16 36h16"/>',
+  chest:'<path d="M8 6v30"/><circle class="h" cx="14" cy="9" r="3.5"/><path d="M14 13v17h12v10M15 19h9M24 14v10"/>',
+  bench:'<path d="M4 34h34M10 34v8M32 34v8"/><circle class="h" cx="36" cy="28" r="3.5"/><path d="M32 30H10l-4 8M24 30V23M10 23h28M12 19v8M36 19v8"/>',
+  shoulder:'<circle class="h" cx="24" cy="16" r="3.5"/><path d="M24 20v14M24 22l-9 1V17M24 22l9 1V17M10 17h8M30 17h8M16 36h16"/>',
+  reardelt:'<circle class="h" cx="24" cy="12" r="3.5"/><path d="M24 16v18M24 20l-5 2M24 20l5 2M19 18v8M29 18v8M16 36h16"/>',
+  latraise:'<circle class="h" cx="24" cy="8" r="3.5"/><path d="M24 12v16l-4 12M24 28l4 12M24 16l5 11M24 16l-5 10"/><circle cx="30" cy="29" r="2.5"/>',
+  frontraise:'<circle class="h" cx="16" cy="8" r="3.5"/><path d="M16 12v16l-4 12M16 28l4 12M17 16l5 12M22 24v8M19 24h6M19 32h6"/>',
+};
+const TIPS={
+  velo:["Règle la selle à hauteur de hanche","Pédale à rythme régulier, dos droit"],
+  adduction:["Dos collé au dossier","Serre les cuisses sans à-coup, reviens lentement"],
+  abduction:["Dos collé au dossier","Écarte les cuisses, retiens le retour"],
+  legpress:["Pieds largeur d'épaules, dos et fesses plaqués","Pousse sans verrouiller les genoux","Redescends lentement"],
+  glute:["Dos plat, abdos serrés","Pousse le talon vers l'arrière, sans cambrer"],
+  legext:["Genoux alignés avec l'axe de la machine","Tends les jambes, marque un temps en haut","Redescends en contrôlant"],
+  hack:["Dos plaqué, pieds largeur d'épaules","Descends cuisses parallèles au sol","Pousse dans les talons"],
+  legcurlassis:["Boudin juste au-dessus des talons","Ramène les talons sous la cuisse","Retiens le retour"],
+  legcurlallonge:["Hanches plaquées sur le banc","Ramène les talons vers les fesses","Retiens le retour"],
+  calf:["Pointes de pieds sur le bord","Monte le plus haut possible, marque un temps","Redescends talons bas"],
+  abdo:["Enroule le buste, ne tire pas avec les bras","Souffle en contractant","Reviens lentement"],
+  row:["Buste droit, poitrine sortie","Tire les coudes vers l'arrière","Serre les omoplates"],
+  pulldown:["Prise un peu plus large que les épaules","Tire la barre vers le haut de la poitrine","Coudes vers le bas, sans élan"],
+  pushdown:["Coudes collés au corps","Tends les bras vers le bas","Remonte sans décoller les coudes"],
+  overhead:["Coudes près de la tête","Tends les bras au-dessus","Seuls les avant-bras bougent"],
+  dip:["Épaules basses, buste légèrement penché","Descends coudes à 90°","Pousse jusqu'à bras tendus"],
+  curlcable:["Coudes fixes contre le corps","Monte les mains vers les épaules","Redescends lentement"],
+  marteau:["Pouces vers le haut","Coudes fixes, monte l'haltère","Pas d'élan avec le dos"],
+  armcurl:["Bras posés à plat sur le pupitre","Monte sans décoller les coudes","Ne tends pas complètement en bas"],
+  pecfly:["Dos plaqué, coudes légèrement fléchis","Ramène les mains devant toi","Ouvre lentement"],
+  chest:["Poignées à hauteur de poitrine","Pousse sans verrouiller les coudes","Reviens en contrôlant"],
+  bench:["Pieds au sol, omoplates serrées","Descends la barre sur la poitrine","Pousse à la verticale"],
+  shoulder:["Dos plaqué, abdos serrés","Pousse au-dessus de la tête","Redescends mains à hauteur d'oreilles"],
+  reardelt:["Poitrine contre le dossier","Ouvre les bras vers l'arrière","Serre les omoplates"],
+  latraise:["Coude légèrement fléchi","Monte le bras jusqu'à l'épaule, pas plus","Redescends lentement"],
+  frontraise:["Buste droit, sans élan","Monte le bras devant jusqu'à l'épaule","Redescends lentement"],
 };
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const num=n=>(Math.round(n*10)/10).toLocaleString("fr-FR");
 const fmtDate=d=>d?new Date(d+"T12:00").toLocaleDateString("fr-FR",{day:"numeric",month:"short"}):"départ";
 const logo=(m,big)=>`<span class="logo${big?" big":""}" style="--c:var(--${m.cat})" aria-hidden="true"><svg viewBox="0 0 48 48">${P[m.picto]||P.chest}</svg></span>`;
+
+// Pictogramme animé : va-et-vient entre la pose P et la pose P2 (SMIL, seul moyen d'interpoler un tracé sur iPhone)
+const pose=s=>[...s.matchAll(/<(\w+)([^>]*?)\/>/g)].map(x=>({t:x[1],a:Object.fromEntries([...x[2].matchAll(/([\w-]+)="([^"]*)"/g)].map(y=>[y[1],y[2]]))}));
+function anim(k){
+  const A=pose(P[k]||P.chest),B=pose(P2[k]||""),still=matchMedia("(prefers-reduced-motion:reduce)").matches;
+  return A.map((e,i)=>{
+    const b=B[i]?.a||{};
+    const an=still?"":Object.keys(e.a).filter(n=>b[n]!==undefined&&b[n]!==e.a[n]).map(n=>`<animate attributeName="${n}" values="${e.a[n]};${b[n]};${e.a[n]}" dur="2.6s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.5;1" keySplines=".4 0 .6 1;.4 0 .6 1"/>`).join("");
+    return`<${e.t} ${Object.entries(e.a).map(([n,v])=>`${n}="${v}"`).join(" ")}>${an}</${e.t}>`;
+  }).join("");
+}
+let howOpen=true;
 
 function spark(m){
   const pts=m.perfs;if(pts.length<2)return"";
@@ -437,6 +528,10 @@ function renderDetail(){
   const d=$("#detail");d.style.setProperty("--c",`var(--${m.cat})`);
   d.innerHTML=`
     <div class="dhead">${logo(m,true)}<div><h2>${esc(m.nom)}</h2><div class="muscle">${esc(CATS.find(c=>c.id===m.cat)?.nom||"")} · ${pts.length} perf${pts.length>1?"s":""}</div></div></div>
+    <details class="how"${howOpen?" open":""} ontoggle="howOpen=this.open"><summary>Comment faire le mouvement</summary>
+      <div class="howb"><span class="logo anim" style="--c:var(--${m.cat})" role="img" aria-label="Animation du mouvement"><svg viewBox="0 0 48 48">${anim(m.picto)}</svg></span>
+      <ul>${(TIPS[m.picto]||TIPS.chest).map(t=>`<li>${t}</li>`).join("")}</ul></div>
+    </details>
     <div class="stats">
       <div class="stat"><b>${b===null?"—":num(b)+" "+u}</b><span>Record</span></div>
       <div class="stat"><b>${pts.length?num(pts[0].v)+" "+u:"—"}</b><span>Départ</span></div>
@@ -470,7 +565,51 @@ function render(){renderSess();renderCal();renderSummary();renderCats();renderDe
 const sb=supabase.createClient("https://pbmzaszurscnetxqtzwg.supabase.co","sb_publishable_pGPBCuEGYyOavEPRIMpwUA_R2OApRUD");
 const store={get:k=>{try{return localStorage.getItem(k)||""}catch{return""}},set:(k,v)=>{try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch{}}};
 let user=null;
-const saveData=async data=>{const {error}=await sb.from("carnets").upsert({user_id:user.id,data,updated_at:new Date().toISOString()});if(error)throw new Error(error.message)};
+const saveData=async data=>{const {error}=await sb.from("carnets").upsert({user_id:user.id,data,updated_at:new Date().toISOString()});if(error)throw new Error(error.message);publish(data)};
+
+// --- Classement : table Supabase « classement », lisible par tous les connectés, une ligne par participant volontaire (pseudo + résumé, jamais le carnet) ---
+let board=[],me=null,boardErr=false,rkMetric="jours";
+const moisNow=()=>today().slice(0,7);
+function boardStats(data){
+  const mo=moisNow(),rec={},days=new Set();let perfs=0;
+  for(const m of data.machines||[]){let b=0;for(const p of m.perfs||[]){if(p.v>b)b=p.v;if(p.d&&p.d.startsWith(mo)){perfs++;days.add(p.d)}}if(b)rec[m.id]=b}
+  return{mois:mo,perfs,jours:days.size,rec};
+}
+// shortcut: envoi sans attendre ni signaler l'échec ; le prochain enregistrement renvoie le résumé complet
+async function publish(data){
+  if(!me||!user)return;
+  const row={user_id:user.id,pseudo:me.pseudo,data:boardStats(data),updated_at:new Date().toISOString()};
+  const {error}=await sb.from("classement").upsert(row);
+  if(!error){me=row;board=board.filter(r=>r.user_id!==row.user_id).concat(row);renderRank()}
+}
+async function loadBoard(){
+  if(!user)return;
+  const {data,error}=await sb.from("classement").select("user_id,pseudo,data");
+  if(!user)return;
+  boardErr=!!error;board=data||[];me=board.find(r=>r.user_id===user.id)||null;renderRank();
+  if(me&&me.data?.mois!==moisNow()&&machines.length)publish({machines});
+}
+function renderRank(){
+  const el=$("#rkBody");
+  if(boardErr){el.innerHTML=`<p class="hint">Classement indisponible pour l'instant. Vérifie ta connexion.</p>`;return}
+  if(!me){
+    el.innerHTML=`<p>Compare-toi aux autres : records par machine et activité du mois.</p>
+      <p class="hint">En rejoignant, ton pseudo, tes records par machine et ton activité du mois deviennent visibles par les autres inscrits. Ton e-mail et le détail de tes séances restent privés. Tu peux quitter quand tu veux.</p>
+      <form id="rkJoin"><label style="grid-column:1/-1">Pseudo<input id="rkP" minlength="2" maxlength="20" required autocomplete="nickname"></label><button class="btn" type="submit">Rejoindre le classement</button></form>
+      <p class="hint">${board.length} participant${board.length>1?"s":""} pour l'instant.</p>`;
+    return;
+  }
+  const mo=moisNow(),mm=byId(rkMetric);
+  if(!mm&&rkMetric!=="perfs")rkMetric="jours";
+  const val=r=>mm?r.data?.rec?.[mm.id]||0:r.data?.mois===mo?r.data[rkMetric]||0:0;
+  const u=mm?" "+unit(mm):rkMetric==="jours"?" j":"";
+  const rows=board.map(r=>({r,v:val(r)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  el.innerHTML=`<label>Classer par<select id="rkSel"><option value="jours">Jours d'entraînement ce mois</option><option value="perfs">Perfs notées ce mois</option>${CATS.map(c=>{const l=machines.filter(m=>m.cat===c.id);return l.length?`<optgroup label="Record · ${c.nom}">${l.map(m=>`<option value="${esc(m.id)}">${esc(m.nom)}</option>`).join("")}</optgroup>`:""}).join("")}</select></label>
+    ${rows.length?`<ol class="rank">${rows.map((x,i)=>`<li${x.r.user_id===user.id?' class="me"':""}><b>${i+1}</b><span>${esc(x.r.pseudo)}${x.r.user_id===user.id?" (toi)":""}</span><em>${num(x.v)}${u}</em></li>`).join("")}</ol>`:`<p class="hint">Personne n'a encore de résultat ici.</p>`}
+    <p class="hint">${board.length} participant${board.length>1?"s":""}. Invite tes potes à rejoindre le classement.</p>
+    <button class="btn ghost" id="rkQuit" type="button">Quitter le classement</button>`;
+  $("#rkSel").value=rkMetric;
+}
 async function loadData(){
   const {data:row,error}=await sb.from("carnets").select("data").maybeSingle();
   if(error)throw new Error(error.message);
@@ -495,14 +634,14 @@ async function mutate(fn){const data=await loadData();fn(data);await saveData(da
 const errText=err=>err.message==="changé"?"Cette perf a changé entre-temps, recharge et réessaie.":err instanceof TypeError||/fetch/i.test(err.message)?"Pas de connexion : vérifie ton réseau et réessaie.":`Échec de l'enregistrement (${err.message}), réessaie.`;
 async function refresh(){
   if(!user)return;
-  try{apply(await loadData())}
+  try{apply(await loadData());loadBoard()}
   catch(e){$("#status").textContent="Impossible de charger ton carnet. Vérifie ta connexion."}
 }
 function updateAccess(){
   canWrite=!!user;
   document.body.classList.toggle("out",!user);
   $("#ghState").textContent=user?`Connecté : ${user.email}`:"";
-  if(!user){machines=[];seances=[];sel=null;setTab("home");$("#status").textContent=""}
+  if(!user){machines=[];seances=[];sel=null;board=[];me=null;setTab("home");$("#status").textContent=""}
 }
 const authErr=m=>/Invalid login/i.test(m)?"E-mail ou mot de passe incorrect.":/not confirmed/i.test(m)?"Confirme d'abord ton e-mail avec le lien reçu.":/already registered/i.test(m)?"Ce compte existe déjà : connecte-toi.":/at least/i.test(m)?"Mot de passe trop court (6 caractères minimum).":/fetch/i.test(m)?"Pas de connexion : vérifie ton réseau.":m;
 async function auth(signup){
@@ -524,7 +663,23 @@ $("#aUp").addEventListener("click",()=>{
   $("#aUp").textContent=signMode?"Se connecter":"Créer un compte";
   $("#ap").autocomplete=signMode?"new-password":"current-password";
 });
-$("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(b){setTab(b.dataset.tab);scrollTo(0,0)}});
+$("#tabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(b){setTab(b.dataset.tab);scrollTo(0,0);if(b.dataset.tab==="rank")loadBoard()}});
+$("#rkBody").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const pseudo=$("#rkP").value.trim();
+  if(pseudo.length<2||pseudo.length>20){$("#rkMsg").textContent="Pseudo : entre 2 et 20 caractères.";return}
+  $("#rkMsg").textContent="Inscription…";
+  const {error}=await sb.from("classement").insert({pseudo,data:boardStats({machines})});
+  $("#rkMsg").textContent=error?(error.code==="23505"?"Ce pseudo est déjà pris.":errText(new Error(error.message))):"";
+  if(!error){await loadBoard();toast("Tu es dans le classement !")}
+});
+$("#rkBody").addEventListener("change",e=>{if(e.target.id==="rkSel"){rkMetric=e.target.value;renderRank()}});
+$("#rkBody").addEventListener("click",async e=>{
+  if(!e.target.closest("#rkQuit")||!confirm("Quitter le classement ? Ton pseudo et tes résultats n'y apparaîtront plus."))return;
+  const {error}=await sb.from("classement").delete().eq("user_id",user.id);
+  if(error){$("#rkMsg").textContent=errText(new Error(error.message));return}
+  await loadBoard();
+});
 $("#filt").addEventListener("click",e=>{const b=e.target.closest("[data-cat]");if(b){catF=b.dataset.cat;renderCats()}});
 $("#logout").addEventListener("click",()=>sb.auth.signOut());
 // setTimeout : supabase-js se bloque si on le rappelle depuis ce callback
