@@ -437,6 +437,7 @@ async function auth(signup){
   const {data,error}=signup?await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}}):await sb.auth.signInWithPassword({email,password});
   $("#amsg").textContent=error?authErr(error.message):signup&&!data.session?"Compte créé. Ouvre le lien reçu par e-mail pour le confirmer, puis connecte-toi.":"";
   if(!error)$("#ap").value="";
+  if(signup&&data?.session)$("#sessMsg").textContent="Inscription réussie : tu es connecté. Bienvenue !";
 }
 $("#af").addEventListener("submit",e=>{e.preventDefault();auth(false)});
 $("#aUp").addEventListener("click",()=>auth(true));
