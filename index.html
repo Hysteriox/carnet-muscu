@@ -153,9 +153,11 @@ input:focus-visible,select:focus-visible{outline:2px solid var(--fg);outline-off
 #calP{gap:12px}
 #calBody{display:grid;gap:12px}
 #calP[open] summary{margin-bottom:12px}
+body.out .wrap>:not(header):not(#auth){display:none}
+body:not(.out) #auth{display:none}
 </style>
 </head>
-<body>
+<body class="out">
 
 <div class="wrap">
   <header>
@@ -165,6 +167,18 @@ input:focus-visible,select:focus-visible{outline:2px solid var(--fg);outline-off
     </div>
     <p id="status">Chargement des machines…</p>
   </header>
+
+  <section class="panel" id="auth">
+    <h2>Connexion</h2>
+    <form id="af">
+      <label style="grid-column:1/-1">E-mail<input id="ae" type="email" autocomplete="email" required></label>
+      <label style="grid-column:1/-1">Mot de passe<input id="ap" type="password" autocomplete="current-password" minlength="6" required></label>
+      <button class="btn" type="submit">Se connecter</button>
+      <button class="btn ghost" type="button" id="aUp">Créer un compte</button>
+    </form>
+    <p class="hint" id="amsg" aria-live="polite"></p>
+    <p class="hint">Chaque compte a son propre carnet, privé : personne d'autre ne voit tes perfs.</p>
+  </section>
 
   <section class="panel" id="sess" aria-label="Séance" hidden>
     <div id="sessBody" style="display:grid;gap:12px"></div>
@@ -221,13 +235,12 @@ input:focus-visible,select:focus-visible{outline:2px solid var(--fg);outline-off
     <p class="hint" id="nmsg"></p>
   </details>
   <details class="panel" id="gh">
-    <summary>Connexion GitHub</summary>
+    <summary>Mon compte</summary>
     <p class="hint" id="ghState"></p>
-    <label>Jeton GitHub<input id="tok" type="password" autocomplete="off" spellcheck="false"></label>
-    <div class="row"><button class="btn" id="tokSave" type="button">Enregistrer</button><button class="btn ghost" id="tokForget" type="button">Oublier le jeton</button></div>
-    <p class="hint">Le jeton reste uniquement sur cet appareil. Il permet à l'appli d'enregistrer tes perfs dans le fichier data.json de ton dépôt GitHub.</p>
+    <div class="row"><button class="btn ghost" id="logout" type="button">Se déconnecter</button></div>
   </details>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 const CATS=[
   {id:"jambes",nom:"Jambes"},{id:"pecs",nom:"Pectoraux"},{id:"dos",nom:"Dos"},{id:"epaules",nom:"Épaules"},
@@ -378,27 +391,19 @@ function renderPicker(){
 }
 function render(){renderSess();renderCal();renderSummary();renderCats();renderDetail();renderSelect()}
 
-// Stockage : data.json dans le dépôt GitHub. Le propriétaire et le dépôt se déduisent de l'adresse <owner>.github.io/<repo>/
-const OWNER=location.hostname.endsWith(".github.io")?location.hostname.split(".")[0]:null;
-const REPO=OWNER?location.pathname.split("/")[1]:null;
-const API=OWNER?`https://api.github.com/repos/${OWNER}/${REPO}/contents/data.json`:null;
+// Stockage : une ligne par compte dans la table Supabase « carnets » ; la règle RLS limite chaque ligne à son propriétaire
+const sb=supabase.createClient("https://pbmzaszurscnetxqtzwg.supabase.co","sb_publishable_pGPBCuEGYyOavEPRIMpwUA_R2OApRUD");
 const store={get:k=>{try{return localStorage.getItem(k)||""}catch{return""}},set:(k,v)=>{try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch{}}};
-let token=store.get("gh-token"),sha=null;
-const hdr=()=>({Accept:"application/vnd.github+json",Authorization:`Bearer ${token}`});
-const b64dec=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g,"")),c=>c.charCodeAt(0)));
-const b64enc=s=>{const b=new TextEncoder().encode(s);let r="";for(let i=0;i<b.length;i+=0x8000)r+=String.fromCharCode(...b.subarray(i,i+0x8000));return btoa(r)};
-
+let user=null;
+const saveData=async data=>{const {error}=await sb.from("carnets").upsert({user_id:user.id,data,updated_at:new Date().toISOString()});if(error)throw new Error(error.message)};
 async function loadData(){
-  if(token&&API){
-    const r=await fetch(API,{headers:hdr(),cache:"no-store"});
-    if(r.status===401){throw new Error("jeton")}
-    if(!r.ok)throw new Error("github "+r.status);
-    const j=await r.json();sha=j.sha;return JSON.parse(b64dec(j.content));
-  }
-  // sans jeton : copie publiée par GitHub Pages (peut avoir quelques minutes de retard)
-  const r=await fetch("data.json?t="+Date.now(),{cache:"no-store"});
-  if(!r.ok)throw new Error("data "+r.status);
-  return r.json();
+  const {data:row,error}=await sb.from("carnets").select("data").maybeSingle();
+  if(error)throw new Error(error.message);
+  if(row)return row.data;
+  // premier lancement : l'appareil qui a l'ancien jeton GitHub reprend l'ancien carnet, les autres partent de la liste de machines sans perfs
+  const r=await fetch((store.get("gh-token")?"data.json":"modele.json")+"?t="+Date.now(),{cache:"no-store"});
+  if(!r.ok)throw new Error("modèle "+r.status);
+  const data=await r.json();await saveData(data);return data;
 }
 function apply(data){
   seances=Array.isArray(data.seances)?data.seances:[];
@@ -409,31 +414,38 @@ function apply(data){
   render();
 }
 const findM=(data,id)=>{const m=(data.machines||[]).find(x=>x.id===id);if(!m)throw new Error("machine");return m};
-// Relit le fichier, applique la modification sur les données fraîches et l'enregistre ; un conflit (409) relance une fois.
-async function mutate(fn,message){
-  for(let tryNo=0;tryNo<2;tryNo++){
-    const data=await loadData();
-    fn(data);
-    const r=await fetch(API,{method:"PUT",headers:hdr(),body:JSON.stringify({message,sha,content:b64enc(JSON.stringify(data,null,1)+"\n")})});
-    if(r.ok){sha=(await r.json()).content.sha;apply(data);return}
-    if(r.status!==409)throw new Error("github "+r.status);
-  }
-  throw new Error("conflit");
-}
-const errText=err=>err.message==="jeton"?"Jeton GitHub refusé : vérifie-le dans « Connexion GitHub ».":err.message==="changé"?"Cette perf a changé entre-temps, recharge et réessaie.":err.message==="github 401"?"Jeton GitHub refusé ou expiré : recrée-le et colle-le dans « Connexion GitHub ».":err.message==="github 403"?"Jeton sans droit d'écriture : mets Contents sur « Read and write » pour le dépôt carnet-muscu.":err.message==="github 404"?"Le jeton n'a pas accès au dépôt carnet-muscu : sélectionne-le dans les réglages du jeton.":err instanceof TypeError?"Pas de connexion à GitHub : vérifie ton réseau et réessaie.":`Échec de l'enregistrement (${err.message}), réessaie.`;
+// Relit le carnet, applique la modification sur les données fraîches et l'enregistre.
+// shortcut: dernier enregistrement gagne si deux appareils du même compte écrivent à la même seconde ; passer à une colonne version si ça arrive
+async function mutate(fn){const data=await loadData();fn(data);await saveData(data);apply(data)}
+const errText=err=>err.message==="changé"?"Cette perf a changé entre-temps, recharge et réessaie.":err instanceof TypeError||/fetch/i.test(err.message)?"Pas de connexion : vérifie ton réseau et réessaie.":`Échec de l'enregistrement (${err.message}), réessaie.`;
 async function refresh(){
+  if(!user)return;
   try{apply(await loadData())}
-  catch(e){$("#status").textContent=e.message==="jeton"?"Jeton GitHub refusé : vérifie-le dans « Connexion GitHub ».":"Impossible de charger les perfs. Vérifie ta connexion."}
+  catch(e){$("#status").textContent="Impossible de charger ton carnet. Vérifie ta connexion."}
 }
 function updateAccess(){
-  canWrite=!!(token&&API);
-  $("#addPanel").hidden=!canWrite;
-  $("#newM").hidden=!canWrite;
-  $("#tok").value="";
-  $("#ghState").textContent=!API?"Cette copie n'est pas sur GitHub Pages : lecture seule.":token?`Connecté au dépôt ${OWNER}/${REPO}.`:"Pas de jeton : tu peux consulter, mais pas enregistrer.";
-  if(!token&&API)$("#gh").open=true;
-  renderDetail();
+  canWrite=!!user;
+  document.body.classList.toggle("out",!user);
+  $("#ghState").textContent=user?`Connecté : ${user.email}`:"";
+  if(!user){machines=[];seances=[];sel=null;$("#status").textContent="Connecte-toi pour ouvrir ton carnet."}
 }
+const authErr=m=>/Invalid login/i.test(m)?"E-mail ou mot de passe incorrect.":/not confirmed/i.test(m)?"Confirme d'abord ton e-mail avec le lien reçu.":/already registered/i.test(m)?"Ce compte existe déjà : connecte-toi.":/at least/i.test(m)?"Mot de passe trop court (6 caractères minimum).":/fetch/i.test(m)?"Pas de connexion : vérifie ton réseau.":m;
+async function auth(signup){
+  const email=$("#ae").value.trim(),password=$("#ap").value;
+  if(!$("#af").reportValidity())return;
+  $("#amsg").textContent=signup?"Création du compte…":"Connexion…";
+  const {data,error}=signup?await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+location.pathname}}):await sb.auth.signInWithPassword({email,password});
+  $("#amsg").textContent=error?authErr(error.message):signup&&!data.session?"Compte créé. Ouvre le lien reçu par e-mail pour le confirmer, puis connecte-toi.":"";
+  if(!error)$("#ap").value="";
+}
+$("#af").addEventListener("submit",e=>{e.preventDefault();auth(false)});
+$("#aUp").addEventListener("click",()=>auth(true));
+$("#logout").addEventListener("click",()=>sb.auth.signOut());
+// setTimeout : supabase-js se bloque si on le rappelle depuis ce callback
+sb.auth.onAuthStateChange((_e,session)=>setTimeout(()=>{
+  const id=session?.user?.id||null;if(id===(user?.id||null))return;
+  user=session?.user||null;updateAccess();refresh();
+},0));
 
 // --- Saisie / modification d'une perf ---
 function exitEdit(){
@@ -481,7 +493,7 @@ $("#f").addEventListener("submit",async e=>{
   const old=editIdx!==null?m?.perfs[editIdx]:null;
   const dateOk=/^\d{4}-\d{2}-\d{2}$/.test(d)||(!d&&old&&!old.d);
   if(!m||!(v>0)||!dateOk||!Number.isInteger(s)||!Number.isInteger(r)||s<0||r<0){$("#msg").textContent="Vérifie la charge, la date, les séries et les reps.";return}
-  if(!canWrite){$("#msg").textContent="Ajoute ton jeton GitHub pour enregistrer.";return}
+  if(!canWrite){$("#msg").textContent="Connecte-toi pour enregistrer.";return}
   const perf={v};if(d)perf.d=d;if(s)perf.s=s;if(r)perf.r=r;
   sel=m.id;
   const btn=$("#fBtn");btn.disabled=true;$("#msg").textContent="Enregistrement…";$("#msg").className="";
@@ -547,8 +559,6 @@ $("#tStart").addEventListener("click",startTimer);
 $("#tStop").addEventListener("click",()=>stopTimer(false));
 showDur();
 
-$("#tokSave").addEventListener("click",()=>{const v=$("#tok").value.trim();if(!v)return;token=v;store.set("gh-token",v);updateAccess();refresh()});
-$("#tokForget").addEventListener("click",()=>{token="";sha=null;store.set("gh-token","");updateAccess();refresh()});
 // --- Séance en cours (l'heure de début reste sur l'appareil, le calendrier se déduit des dates des perfs) ---
 let sessStart=+store.get("seance")||0;
 const dayKey=ts=>new Date(ts).toLocaleDateString("sv-SE");
@@ -615,7 +625,6 @@ $("#calBody").addEventListener("click",e=>{
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState!=="visible")return;refresh();if(tInt)tick()});
 
 updateAccess();
-refresh();
 </script>
 </body>
 </html>

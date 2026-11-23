@@ -1,0 +1,389 @@
+{
+ "machines": [
+  {
+   "id": "velo",
+   "cat": "jambes",
+   "nom": "Vélo",
+   "o": 1,
+   "picto": "velo",
+   "unite": "km",
+   "perfs": []
+  },
+  {
+   "id": "adduction",
+   "cat": "jambes",
+   "nom": "Hip adduction",
+   "o": 2,
+   "picto": "adduction",
+   "perfs": []
+  },
+  {
+   "id": "abduction",
+   "cat": "jambes",
+   "nom": "Hip abduction",
+   "o": 3,
+   "picto": "abduction",
+   "perfs": []
+  },
+  {
+   "id": "legpress",
+   "cat": "jambes",
+   "nom": "Leg press",
+   "o": 4,
+   "picto": "legpress",
+   "perfs": []
+  },
+  {
+   "id": "legpressfw",
+   "cat": "jambes",
+   "nom": "Leg press FW",
+   "o": 5,
+   "picto": "legpress",
+   "perfs": []
+  },
+  {
+   "id": "presscul",
+   "cat": "jambes",
+   "nom": "Press cul",
+   "o": 6,
+   "picto": "glute",
+   "perfs": []
+  },
+  {
+   "id": "legext",
+   "cat": "jambes",
+   "nom": "Leg extension",
+   "o": 7,
+   "picto": "legext",
+   "perfs": []
+  },
+  {
+   "id": "hack",
+   "cat": "jambes",
+   "nom": "Hack squat",
+   "o": 8,
+   "picto": "hack",
+   "perfs": []
+  },
+  {
+   "id": "legcurlassis",
+   "cat": "jambes",
+   "nom": "Seated leg curl",
+   "o": 9,
+   "picto": "legcurlassis",
+   "perfs": []
+  },
+  {
+   "id": "calf",
+   "cat": "jambes",
+   "nom": "Seated calf",
+   "o": 10,
+   "picto": "calf",
+   "perfs": []
+  },
+  {
+   "id": "legcurlallonge",
+   "cat": "jambes",
+   "nom": "Prone leg curl",
+   "o": 11,
+   "picto": "legcurlallonge",
+   "perfs": []
+  },
+  {
+   "id": "pecfly",
+   "cat": "pecs",
+   "nom": "Pec fly",
+   "o": 20,
+   "picto": "pecfly",
+   "perfs": []
+  },
+  {
+   "id": "inclinesm",
+   "cat": "pecs",
+   "nom": "Incline Smith machine",
+   "o": 21,
+   "picto": "bench",
+   "perfs": []
+  },
+  {
+   "id": "convchest",
+   "cat": "pecs",
+   "nom": "Converging chest press",
+   "o": 22,
+   "picto": "chest",
+   "perfs": []
+  },
+  {
+   "id": "chestfw",
+   "cat": "pecs",
+   "nom": "Chest press FW",
+   "o": 23,
+   "picto": "chest",
+   "perfs": []
+  },
+  {
+   "id": "chest",
+   "cat": "pecs",
+   "nom": "Chest press",
+   "o": 24,
+   "picto": "chest",
+   "perfs": []
+  },
+  {
+   "id": "halterallonge",
+   "cat": "pecs",
+   "nom": "Haltère allongé",
+   "o": 25,
+   "picto": "bench",
+   "perfs": []
+  },
+  {
+   "id": "bench",
+   "cat": "pecs",
+   "nom": "Bench",
+   "o": 26,
+   "picto": "bench",
+   "perfs": []
+  },
+  {
+   "id": "benchhaltere",
+   "cat": "pecs",
+   "nom": "Bench haltère",
+   "o": 27,
+   "picto": "bench",
+   "perfs": []
+  },
+  {
+   "id": "rowneutre",
+   "cat": "dos",
+   "nom": "Seated row (poignée neutre)",
+   "o": 30,
+   "picto": "row",
+   "perfs": []
+  },
+  {
+   "id": "rowhoriz",
+   "cat": "dos",
+   "nom": "Seated row (poignée horizontale)",
+   "o": 31,
+   "picto": "row",
+   "perfs": []
+  },
+  {
+   "id": "rowfw",
+   "cat": "dos",
+   "nom": "Seated row FW",
+   "o": 32,
+   "picto": "row",
+   "perfs": []
+  },
+  {
+   "id": "divlat",
+   "cat": "dos",
+   "nom": "Diverging lat pulldown",
+   "o": 33,
+   "picto": "pulldown",
+   "perfs": []
+  },
+  {
+   "id": "latserre",
+   "cat": "dos",
+   "nom": "Lat pull (prise serrée)",
+   "o": 34,
+   "picto": "pulldown",
+   "perfs": []
+  },
+  {
+   "id": "latlarge",
+   "cat": "dos",
+   "nom": "Lat pull (prise large)",
+   "o": 35,
+   "picto": "pulldown",
+   "perfs": []
+  },
+  {
+   "id": "lat2",
+   "cat": "dos",
+   "nom": "Lat pull (poignée 2)",
+   "o": 36,
+   "picto": "pulldown",
+   "perfs": []
+  },
+  {
+   "id": "lowrow",
+   "cat": "dos",
+   "nom": "Low row (zone poulie)",
+   "o": 37,
+   "picto": "row",
+   "perfs": []
+  },
+  {
+   "id": "divrow",
+   "cat": "dos",
+   "nom": "Diverging seated row",
+   "o": 38,
+   "picto": "row",
+   "perfs": []
+  },
+  {
+   "id": "shneutre",
+   "cat": "epaules",
+   "nom": "Shoulder press (prise neutre)",
+   "o": 40,
+   "picto": "shoulder",
+   "perfs": []
+  },
+  {
+   "id": "shlarge",
+   "cat": "epaules",
+   "nom": "Shoulder press (prise large)",
+   "o": 41,
+   "picto": "shoulder",
+   "perfs": []
+  },
+  {
+   "id": "shdiv",
+   "cat": "epaules",
+   "nom": "Shoulder press diverging",
+   "o": 42,
+   "picto": "shoulder",
+   "perfs": []
+  },
+  {
+   "id": "reardelt",
+   "cat": "epaules",
+   "nom": "Rear delt",
+   "o": 43,
+   "picto": "reardelt",
+   "perfs": []
+  },
+  {
+   "id": "latraise",
+   "cat": "epaules",
+   "nom": "Élévation latérale poulie",
+   "o": 44,
+   "picto": "latraise",
+   "perfs": []
+  },
+  {
+   "id": "frontraise",
+   "cat": "epaules",
+   "nom": "Front raise",
+   "o": 45,
+   "picto": "frontraise",
+   "perfs": []
+  },
+  {
+   "id": "curlbarre",
+   "cat": "biceps",
+   "nom": "Poulie bas vers haut (barre droite)",
+   "o": 50,
+   "picto": "curlcable",
+   "perfs": []
+  },
+  {
+   "id": "curlv",
+   "cat": "biceps",
+   "nom": "Poulie bas vers haut (fils V)",
+   "o": 51,
+   "picto": "curlcable",
+   "perfs": []
+  },
+  {
+   "id": "marteau",
+   "cat": "biceps",
+   "nom": "Haltères marteau",
+   "o": 52,
+   "picto": "marteau",
+   "perfs": []
+  },
+  {
+   "id": "armcurl",
+   "cat": "biceps",
+   "nom": "Arm curl",
+   "o": 53,
+   "picto": "armcurl",
+   "perfs": []
+  },
+  {
+   "id": "bayesian",
+   "cat": "biceps",
+   "nom": "Bayesian curls",
+   "o": 54,
+   "picto": "curlcable",
+   "perfs": []
+  },
+  {
+   "id": "dip",
+   "cat": "triceps",
+   "nom": "Seated dip",
+   "o": 60,
+   "picto": "dip",
+   "perfs": []
+  },
+  {
+   "id": "pushdown",
+   "cat": "triceps",
+   "nom": "Poulie haut vers bas",
+   "o": 61,
+   "picto": "pushdown",
+   "perfs": []
+  },
+  {
+   "id": "overhead",
+   "cat": "triceps",
+   "nom": "Poulie bas vers haut",
+   "o": 62,
+   "picto": "overhead",
+   "perfs": []
+  },
+  {
+   "id": "pushdownv",
+   "cat": "triceps",
+   "nom": "Poulie haut vers bas (prise V)",
+   "o": 63,
+   "picto": "pushdown",
+   "perfs": []
+  },
+  {
+   "id": "cheflat",
+   "cat": "triceps",
+   "nom": "Chef latéral",
+   "o": 64,
+   "picto": "pushdown",
+   "perfs": []
+  },
+  {
+   "id": "abdo",
+   "cat": "abdos",
+   "nom": "Abdominal",
+   "o": 70,
+   "picto": "abdo",
+   "perfs": []
+  },
+  {
+   "id": "barre-w-ziwa",
+   "cat": "biceps",
+   "nom": "Barre W ZIWA",
+   "o": 55,
+   "picto": "latraise",
+   "perfs": []
+  },
+  {
+   "id": "supine-la-press",
+   "cat": "pecs",
+   "nom": "Supine la Press",
+   "o": 28,
+   "picto": "bench",
+   "perfs": []
+  },
+  {
+   "id": "poulie-ecarte",
+   "cat": "pecs",
+   "nom": "Poulie écarté",
+   "o": 29,
+   "picto": "reardelt",
+   "perfs": []
+  }
+ ]
+}
